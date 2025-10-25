@@ -3154,13 +3154,23 @@
         current[keys[keys.length - 1]] = value;
       },
 
+
       buildObituaryPrompt(formData) {
-        let prompt = `You are a professional obituary writer. Please write a beautiful, heartfelt, and comprehensive obituary based on the following information:\n\n`;
+        let prompt = `You are writing an obituary for a FUNERAL PROGRAM (not a death announcement). This will be printed in the actual funeral service booklet.
+
+CRITICAL STYLE REQUIREMENTS:
+- DO NOT start with "passed away" or death announcement language
+- START with birth information: "was born on [date] in [location] to [parents]"
+- Use PAST TENSE throughout the entire obituary
+- This is for the funeral program, not a newspaper announcement
+- Write in a warm, respectful, and celebratory tone that honors their life
+
+`;
         
         // Personal Information
         if (formData.personal) {
           prompt += `PERSONAL INFORMATION:\n`;
-          if (formData.personal.fullLegalName) prompt += `Name: ${formData.personal.fullLegalName}\n`;
+          if (formData.personal.fullLegalName) prompt += `Full Name: ${formData.personal.fullLegalName}\n`;
           if (formData.personal.dateOfBirth) prompt += `Date of Birth: ${formData.personal.dateOfBirth}\n`;
           if (formData.personal.placeOfBirth) prompt += `Place of Birth: ${formData.personal.placeOfBirth}\n`;
           if (formData.personal.dateOfDeath) prompt += `Date of Death: ${formData.personal.dateOfDeath}\n`;
@@ -3169,20 +3179,14 @@
           prompt += `\n`;
         }
 
-        // Marriage Information
-        if (formData.surviving && formData.surviving.marriageStatus === 'yes' && formData.surviving.spouse) {
-          prompt += `MARRIAGE:\n`;
-          if (formData.surviving.spouse.name) prompt += `Spouse: ${formData.surviving.spouse.name}\n`;
-          if (formData.surviving.spouse.marriageYear) prompt += `Married in: ${formData.surviving.spouse.marriageYear}\n`;
-          if (formData.surviving.spouse.marriageLocation) prompt += `Marriage Location: ${formData.surviving.spouse.marriageLocation}\n`;
-          if (formData.surviving.spouse.marriageDetails) prompt += `Marriage Details: ${formData.surviving.spouse.marriageDetails}\n`;
-          if (formData.surviving.spouse.deceased) {
-            prompt += `Spouse Status: Deceased`;
-            if (formData.surviving.spouse.deathDate) prompt += ` (${formData.surviving.spouse.deathDate})`;
-            prompt += `\n`;
-          }
-          prompt += `\n`;
-        }
+        // Determine if this is clergy/religious leader
+        const isClergy = formData.career && formData.career.positions && 
+          Object.values(formData.career.positions).some(pos => 
+            pos.title && (pos.title.toLowerCase().includes('pastor') || 
+                         pos.title.toLowerCase().includes('bishop') || 
+                         pos.title.toLowerCase().includes('minister') ||
+                         pos.title.toLowerCase().includes('reverend') ||
+                         pos.title.toLowerCase().includes('deacon')));
 
         // Faith Information
         if (formData.faith) {
@@ -3192,76 +3196,73 @@
           prompt += `\n`;
         }
 
-        // Family Information
-        if (formData.surviving) {
-          prompt += `FAMILY:\n`;
-          
-          // Parents
-          if (formData.surviving.parents) {
-            prompt += `Parents:\n`;
-            Object.values(formData.surviving.parents).forEach(parent => {
-              if (parent.name) {
-                prompt += `  - ${parent.relationship || 'Parent'}: ${parent.name}`;
-                if (parent.deceased) prompt += ` (Deceased)`;
-                prompt += `\n`;
-              }
-            });
-          }
-          
-          // Siblings
-          if (formData.surviving.siblings) {
-            prompt += `Siblings:\n`;
-            Object.values(formData.surviving.siblings).forEach(sibling => {
-              if (sibling.name) {
-                prompt += `  - ${sibling.name}`;
-                if (sibling.relationshipType) prompt += ` (${sibling.relationshipType})`;
-                prompt += `\n`;
-              }
-            });
-          }
-          
-          // Children
-          if (formData.surviving.children) {
-            prompt += `Children:\n`;
-            Object.values(formData.surviving.children).forEach(child => {
-              if (child.name) {
-                prompt += `  - ${child.name}`;
-                if (child.relationshipType) prompt += ` (${child.relationshipType})`;
-                prompt += `\n`;
-              }
-            });
-          }
-          
+        // Family Information - Parents
+        if (formData.surviving && formData.surviving.parents) {
+          prompt += `PARENTS:\n`;
+          Object.values(formData.surviving.parents).forEach(parent => {
+            if (parent.name) {
+              prompt += `  - ${parent.relationship || 'Parent'}: ${parent.name}`;
+              if (parent.deceased) prompt += ` (Deceased - use "late" prefix)`;
+              prompt += `\n`;
+            }
+          });
           prompt += `\n`;
         }
 
-        // Education
-        if (formData.education) {
-          prompt += `EDUCATION:\n`;
-          if (formData.education.colleges) {
-            Object.values(formData.education.colleges).forEach(college => {
-              if (college.schoolName) {
-                prompt += `  - ${college.schoolName}`;
-                if (college.degree) prompt += `, ${college.degree}`;
-                if (college.graduationYear) prompt += ` (${college.graduationYear})`;
-                prompt += `\n`;
-              }
+        // Siblings who preceded in death
+        if (formData.surviving && formData.surviving.siblings) {
+          const deceasedSiblings = Object.values(formData.surviving.siblings).filter(s => s.deceased && s.name);
+          if (deceasedSiblings.length > 0) {
+            prompt += `PRECEDED IN DEATH BY (Siblings):\n`;
+            deceasedSiblings.forEach(sibling => {
+              prompt += `  - ${sibling.name}`;
+              if (sibling.relationshipType) prompt += ` (${sibling.relationshipType})`;
+              prompt += `\n`;
             });
+            prompt += `\n`;
           }
+        }
+
+        // Education
+        if (formData.education && formData.education.colleges) {
+          prompt += `EDUCATION:\n`;
+          Object.values(formData.education.colleges).forEach(college => {
+            if (college.schoolName) {
+              prompt += `  - ${college.schoolName}`;
+              if (college.degree) prompt += `, ${college.degree}`;
+              if (college.graduationYear) prompt += ` (Class of ${college.graduationYear})`;
+              prompt += `\n`;
+            }
+          });
           prompt += `\n`;
         }
 
         // Career
-        if (formData.career) {
-          prompt += `CAREER:\n`;
-          if (formData.career.positions) {
-            Object.values(formData.career.positions).forEach(position => {
-              if (position.title && position.employer) {
-                prompt += `  - ${position.title} at ${position.employer}`;
-                if (position.yearsActive) prompt += ` (${position.yearsActive})`;
-                prompt += `\n`;
-              }
-            });
+        if (formData.career && formData.career.positions) {
+          prompt += `CAREER${isClergy ? '/MINISTRY' : ''}:\n`;
+          Object.values(formData.career.positions).forEach(position => {
+            if (position.title && position.employer) {
+              prompt += `  - ${position.title} at ${position.employer}`;
+              if (position.yearsActive) prompt += ` (${position.yearsActive})`;
+              if (position.location) prompt += `, ${position.location}`;
+              prompt += `\n`;
+            }
+          });
+          prompt += `\n`;
+        }
+
+        // Marriage Information
+        if (formData.surviving && formData.surviving.marriageStatus === 'yes' && formData.surviving.spouse) {
+          prompt += `MARRIAGE:\n`;
+          if (formData.surviving.spouse.marriageDate) prompt += `Marriage Date: ${formData.surviving.spouse.marriageDate}\n`;
+          if (formData.surviving.spouse.name) prompt += `Spouse: ${formData.surviving.spouse.name}\n`;
+          if (formData.surviving.spouse.marriageLocation) prompt += `Marriage Location: ${formData.surviving.spouse.marriageLocation}\n`;
+          if (formData.surviving.spouse.marriageDetails) prompt += `Marriage Details: ${formData.surviving.spouse.marriageDetails}\n`;
+          if (formData.surviving.spouse.childrenFromUnion) prompt += `Children from this union: ${formData.surviving.spouse.childrenFromUnion}\n`;
+          if (formData.surviving.spouse.deceased) {
+            prompt += `Spouse Status: Deceased`;
+            if (formData.surviving.spouse.deathDate) prompt += ` (${formData.surviving.spouse.deathDate})`;
+            prompt += ` - Include in "preceded in death" section\n`;
           }
           prompt += `\n`;
         }
@@ -3278,27 +3279,148 @@
           prompt += `\n`;
         }
 
+        // Surviving Family
+        prompt += `SURVIVORS (Those left to cherish memories):\n`;
+        
+        // Spouse (if living)
+        if (formData.surviving && formData.surviving.marriageStatus === 'yes' && 
+            formData.surviving.spouse && formData.surviving.spouse.name && 
+            !formData.surviving.spouse.deceased) {
+          prompt += `Spouse: ${formData.surviving.spouse.name}`;
+          if (formData.surviving.spouse.location) prompt += ` (${formData.surviving.spouse.location})`;
+          prompt += `\n`;
+        }
+        
+        // Children
+        if (formData.surviving && formData.surviving.children) {
+          prompt += `Children:\n`;
+          Object.values(formData.surviving.children).forEach(child => {
+            if (child.name) {
+              prompt += `  - ${child.name}`;
+              if (child.spouse) prompt += ` (${child.spouse})`;
+              if (child.location) prompt += `, ${child.location}`;
+              if (child.relationshipType && child.relationshipType !== 'Biological') prompt += ` [${child.relationshipType}]`;
+              prompt += `\n`;
+            }
+          });
+        }
+        
+        // Grandchildren
+        if (formData.surviving && formData.surviving.grandchildren) {
+          const grandchildrenList = Object.values(formData.surviving.grandchildren).filter(gc => gc.name);
+          if (grandchildrenList.length > 0) {
+            prompt += `Grandchildren:\n`;
+            grandchildrenList.forEach(grandchild => {
+              prompt += `  - ${grandchild.name}`;
+              if (grandchild.location) prompt += `, ${grandchild.location}`;
+              prompt += `\n`;
+            });
+          }
+        }
+        
+        // Living Siblings
+        if (formData.surviving && formData.surviving.siblings) {
+          const livingSiblings = Object.values(formData.surviving.siblings).filter(s => !s.deceased && s.name);
+          if (livingSiblings.length > 0) {
+            prompt += `Siblings:\n`;
+            livingSiblings.forEach(sibling => {
+              prompt += `  - ${sibling.name}`;
+              if (sibling.location) prompt += `, ${sibling.location}`;
+              prompt += `\n`;
+            });
+          }
+        }
+        
+        prompt += `\nNote: End survivors section with "and a host of nieces, nephews, cousins, other relatives and friends."\n\n`;
+
         // Additional Information
         if (formData.additional && formData.additional.otherInformation) {
           prompt += `ADDITIONAL INFORMATION:\n${formData.additional.otherInformation}\n\n`;
         }
 
-        prompt += `\nPlease write a touching, well-structured obituary that honors this person's life, incorporating all the relevant information provided. 
+        // Final instructions based on person's background
+        if (isClergy) {
+          prompt += `
+OBITUARY STRUCTURE FOR CLERGY/RELIGIOUS LEADER (Write 600-1000 words):
 
-IMPORTANT INSTRUCTIONS:
-- Write in a warm, compassionate, and respectful tone
-- Create natural flowing paragraphs (not bullet points or lists)
-- Weave the information together into a cohesive narrative
-- Begin with the announcement of passing and basic facts
-- Include marriage/spouse information naturally in the text
-- Clearly indicate if parents or spouse are deceased (e.g., "preceded in death by")
-- Mention surviving family members appropriately
-- Incorporate their life story, career, education, and interests
-- End with a meaningful reflection on their legacy or impact
-- Write approximately 300-500 words
-- Use paragraph breaks for readability
-- DO NOT use markdown formatting - output plain text with natural paragraph breaks`;
-        
+1. OPENING: Start with "[Title] [Full Name] was born on [date] in [location] to [parents names with "late" prefix if deceased]."
+
+2. EARLY RELIGIOUS LIFE: Describe when they accepted Christ and their early church involvement. Mention home church where they grew up.
+
+3. EDUCATION: List all educational institutions chronologically, including seminaries, with graduation years (e.g., "Class of 1997").
+
+4. ORDINATION/CALLING: If applicable, describe their ordination - who ordained them, when, where, and their first service/assignment.
+
+5. MINISTRY CAREER: Detail their ministry positions chronologically with specific dates, locations, and accomplishments. Include:
+   - All pastoral assignments with years of service
+   - Leadership roles in denominational organizations
+   - Special appointments or honors
+   - Community involvement and impact
+
+6. MARRIAGE & FAMILY: Describe their marriage - date, location, spouse's full name. Mention children born from the union.
+
+7. CHARACTER & LEGACY: Include 2-3 sentences about their personality, ministry style, or impact on others.
+
+8. PRECEDED IN DEATH: List deceased spouse (if applicable) and deceased siblings with full names.
+
+9. SURVIVORS: Begin with "Those left to cherish precious memories..." or similar phrase. List:
+   - Spouse with location (if living)
+   - Children with spouses in parentheses and locations
+   - Grandchildren with locations
+   - Siblings with locations
+   - Other significant family members
+   - End with "and a host of nieces, nephews, cousins, other relatives, friends, and church family."
+
+TONE: Respectful, celebratory of their ministry, warm. Use titles (Bishop, Pastor, Reverend) consistently.
+`;
+        } else {
+          prompt += `
+OBITUARY STRUCTURE FOR GENERAL OBITUARY (Write 400-600 words):
+
+1. OPENING: Start with "[Full Name] was born on [date] in [location] to [parents names with "late" prefix if deceased]."
+   - If they had many siblings, mention birth order: "was the [ordinal] of [number] children"
+
+2. EARLY LIFE & FAITH: Describe their early religious background - when they accepted Christ, what church they joined. Keep brief but meaningful.
+
+3. EDUCATION: List their educational background with schools and graduation years (e.g., "graduated with honors from [School], class of [year]").
+
+4. CAREER: Describe their work history chronologically. Include:
+   - Job titles and employers
+   - Years of service
+   - Retirements and length of service
+   - Multiple careers if applicable
+
+5. MARRIAGE & FAMILY: Describe marriage - "On [date], [name] married [spouse name]." Mention where they married if known. State "Through this union, the Lord blessed them with [number] children: [names]."
+
+6. LIFE TRANSITION (Optional): You may include a respectful phrase like "completed their earthly assignment on [date] and transitioned to their eternal home" OR simply move to survivors section.
+
+7. PRECEDED IN DEATH: If applicable, list deceased spouse and deceased siblings with full names.
+
+8. SURVIVORS: Begin with "Those left to cherish precious memories..." or "[Name] leaves to mourn his/her passing:" List:
+   - Spouse with location (if living)
+   - Children with locations (spouses in parentheses if applicable)
+   - Grandchildren with locations
+   - Siblings with locations
+   - Extended family members if significant
+   - End with "as well as a host of nieces, nephews, cousins, other relatives and friends."
+
+IMPORTANT STYLE NOTES:
+- Use respectful titles: "Mr.", "Mrs.", "Ms.", "Brother", "Sister", "Mother" as culturally appropriate
+- Include city/state locations for family members when known
+- List spouses of children in parentheses: "John (Mary) Smith"
+- Use warm, personal language that celebrates their life
+- Keep paragraphs readable - break up long sections
+- Write in PAST TENSE throughout
+
+DO NOT:
+- Start with death announcement
+- Use markdown formatting
+- Create bullet points or numbered lists
+- Write in present tense
+- Use overly formal or stiff language
+`;
+        }
+
         return prompt;
       },
 
