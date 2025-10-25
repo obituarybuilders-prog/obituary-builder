@@ -1,0 +1,3436 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Obituary Builders - Account</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap"
+    rel="stylesheet" />
+  <!-- SortableJS for Drag & Drop -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <!-- Cropper.js for Photo Editing -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+  <style>
+    body {
+      font-family: "Merriweather", serif;
+      /* background-image is now set by JavaScript */
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      transition: background-image 0.5s ease-in-out;
+    }
+
+    .font-serif {
+      font-family: 'Playfair Display', serif;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .form-step {
+      display: none;
+    }
+
+    .form-step.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .form-step.active {
+      animation: fadeIn .5s ease-in-out;
+    }
+
+    .sortable-ghost {
+      opacity: .4;
+      background: #cce0ff;
+    }
+
+    .dynamic-entry {
+      cursor: grab;
+    }
+
+    .gemini-button::after {
+      content: '✨';
+      margin-left: .25rem;
+      display: inline-block;
+    }
+
+    @media print {
+      .dot-row {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .dot-leader {
+        flex: 1;
+        border-bottom: 1px dotted #444;
+        transform: translateY(-.2rem);
+        margin: 0 .25rem;
+      }
+    }
+
+    .photo-upload-container {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .photo-preview-overlay {
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    .photo-upload-container:hover .photo-preview-overlay {
+      opacity: 1;
+    }
+
+    .upload-progress {
+      transition: all 0.3s ease;
+    }
+
+    .progress-bar {
+      transition: width 0.2s ease-out;
+      background: linear-gradient(90deg, #4f46e5, #7c3aed);
+    }
+
+    .upload-success {
+      animation: uploadSuccess 0.5s ease-out;
+    }
+
+    @keyframes uploadSuccess {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .error-border {
+      border-color: #ef4444 !important;
+    }
+
+    .success-border {
+      border-color: #10b981 !important;
+    }
+
+    .photo-editor-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .photo-editor-container {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 90%;
+      overflow: auto;
+    }
+
+    .cropper-container {
+      max-height: 400px;
+      margin: 20px 0;
+    }
+
+    .editor-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0;
+      justify-content: center;
+    }
+
+    .editor-btn {
+      padding: 8px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .editor-btn:hover {
+      background: #f3f4f6;
+      border-color: #9ca3af;
+    }
+
+    .editor-btn.active {
+      background: #4f46e5;
+      color: white;
+      border-color: #4f46e5;
+    }
+
+    #venue-suggestions {
+      position: absolute;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-top: none;
+      border-radius: 0 0 0.5rem 0.5rem;
+      width: 100%;
+      z-index: 10;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    #venue-suggestions div {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+    }
+
+    #venue-suggestions div:hover {
+      background-color: #f7fafc;
+    }
+
+    .life-story .field-instructions {
+      font-size: 0.9rem;
+      color: #0b5ed7;
+      /* Muted blue for visibility and accessibility */
+      display: block;
+      margin-top: 0.25rem;
+    }
+
+    .page-intro-box {
+      background-color: #f8f9fa;
+      /* light gray shading */
+      border: 1px solid #dee2e6;
+      /* subtle border */
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 6px;
+      font-size: 1.05rem;
+      color: #2c3e50;
+      /* dark slate gray text */
+    }
+
+    .life-story .field-error {
+      display: block;
+      margin-top: 0.25rem;
+      font-size: 0.9rem;
+      color: #b00020;
+      /* accessible red for errors */
+    }
+
+    .life-story [aria-invalid="true"] {
+      outline: 2px solid #b00020;
+      outline-offset: 2px;
+    }
+  </style>
+
+</head>
+
+<body class="text-gray-800 antialiased">
+  <div id="app-container" class="container mx-auto min-h-screen px-4 py-8">
+    <div id="loading-view" class="view flex items-center justify-center min-h-screen">
+      <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600"></div>
+    </div>
+
+    <div id="login-view" class="view flex items-center justify-center min-h-screen">
+      <div
+        class="w-full max-w-md bg-white/90 backdrop-blur-sm p-8 md:p-10 rounded-2xl shadow-lg border border-gray-200">
+        <div class="text-center mb-8">
+          <img src="https://obituarybuilders.com/logos/OBITUARY-2.png" alt="Obituary Builders Logo"
+            class="mx-auto h-48 w-auto mb-6">
+          <h1 class="text-3xl font-serif text-gray-800">Honoring Every Life,<br>With Care.</h1>
+          <p class="text-gray-500 mt-2">Sign in or create an account to begin.</p>
+        </div>
+        <form id="login-form">
+          <div id="login-error"
+            class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm"></div>
+          <div class="mb-4">
+            <label for="login-email" class="block text-sm font-medium text-gray-600 mb-1">Email</label>
+            <input type="email" id="login-email"
+              class="w-full px-4 py-2 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-indigo-500" required />
+          </div>
+          <div class="mb-6">
+            <label for="login-password" class="block text-sm font-medium text-gray-600 mb-1">Password</label>
+            <input type="password" id="login-password"
+              class="w-full px-4 py-2 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-indigo-500" required />
+          </div>
+          <button type="submit"
+            class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 shadow-md">Sign
+            In</button>
+        </form>
+        <p class="text-center text-sm text-gray-500 mt-6">
+          Don't have an account?
+          <a href="#" id="show-signup" class="font-medium text-indigo-600 hover:text-indigo-500">Sign up</a>
+        </p>
+      </div>
+    </div>
+
+    <div id="signup-view" class="view flex items-center justify-center min-h-screen">
+      <div
+        class="w-full max-w-md bg-white/90 backdrop-blur-sm p-8 md:p-10 rounded-2xl shadow-lg border border-gray-200">
+        <div class="text-center mb-8">
+          <h1 class="text-3xl font-serif text-gray-800">Create Your Account</h1>
+          <p class="text-gray-500 mt-2">Start creating a beautiful tribute.</p>
+        </div>
+        <form id="signup-form">
+          <div id="signup-error"
+            class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm"></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div><label for="signup-firstname" class="block text-sm font-medium text-gray-600 mb-1">First
+                Name</label><input type="text" id="signup-firstname"
+                class="w-full px-4 py-2 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-indigo-500" required />
+            </div>
+            <div><label for="signup-lastname" class="block text-sm font-medium text-gray-600 mb-1">Last
+                Name</label><input type="text" id="signup-lastname"
+                class="w-full px-4 py-2 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-indigo-500" required />
+            </div>
+          </div>
+          <div class="mb-4"><label for="signup-street" class="block text-sm font-medium text-gray-600 mb-1">Street
+              Address</label><input type="text" id="signup-street"
+              class="w-full px-4 py-2 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-indigo-500" required /></div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div><label for="signup-city" class="block text-sm font-medium text-gray-600 mb-1">City</label><input
+                type="text" id="signup-city"
+                class="w-full px-4 py-2 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-indigo-500" required />
+            </div>
+            <div><label for="signup-state" class="block text-sm font-medium text-gray-600 mb-1">State</label><input
+                type="text" id="signup-state"
+                class="w-full px-4 py-2 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-indigo-500" required />
+            </div>
+            <div><label for="signup-zip" class="block text-sm font-medium text-gray-600 mb-1">Zip</label><input
+                type="text" id="signup-zip"
+                class="w-full px-4 py-2 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-indigo-500" required />
+            </div>
+          </div>
+          <div class="mb-4"><label for="signup-phone"
+              class="block text-sm font-medium text-gray-600 mb-1">Phone</label><input type="tel" id="signup-phone"
+              class="w-full px-4 py-2 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-indigo-500" required /></div>
+          <div class="mb-4"><label for="signup-email"
+              class="block text-sm font-medium text-gray-600 mb-1">Email</label><input type="email" id="signup-email"
+              class="w-full px-4 py-2 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-indigo-500" required /></div>
+          <div class="mb-6"><label for="signup-password"
+              class="block text-sm font-medium text-gray-600 mb-1">Password</label><input type="password"
+              id="signup-password"
+              class="w-full px-4 py-2 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-indigo-500" required
+              minlength="6" />
+            <p class="text-xs text-gray-500 mt-1">6+ characters.</p>
+          </div>
+          <div class="mt-6 mb-4">
+            <label class="flex items-start">
+              <input type="checkbox" id="signup-terms" name="terms" required
+                class="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+              <span class="ml-3 text-sm text-gray-600">By creating an account, you agree to our <a href="#"
+                  class="font-medium text-indigo-600 hover:text-indigo-500">Terms of Service</a> and <a href="#"
+                  class="font-medium text-indigo-600 hover:text-indigo-500">Privacy Policy</a>.</span>
+            </label>
+          </div>
+          <button type="submit"
+            class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 shadow-md">Create
+            Account</button>
+        </form>
+        <p class="text-center text-sm text-gray-500 mt-6">Already have an account? <a href="#" id="show-login"
+            class="font-medium text-indigo-600 hover:text-indigo-500">Sign in</a></p>
+      </div>
+    </div>
+
+    <div id="dashboard-view" class="view w-full max-w-6xl mx-auto">
+      <div class="bg-white p-8 md:p-10 rounded-2xl shadow-lg border border-gray-200">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+          <div class="mb-4 sm:mb-0">
+            <h1 class="text-3xl font-serif text-gray-800">My Dashboard</h1>
+            <p class="text-gray-500 mt-1">Welcome, <span id="user-name" class="font-medium"></span></p>
+          </div>
+          <div class="flex items-center gap-4">
+            <button id="create-new-button"
+              class="bg-indigo-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-indigo-700 shadow-md">+ New
+              Program</button>
+            <button id="logout-button"
+              class="bg-gray-700 text-white font-bold py-2 px-5 rounded-lg hover:bg-gray-800">Log Out</button>
+          </div>
+        </div>
+        <div id="obituaries-list-container"></div>
+        <div id="no-obituaries-view" class="text-center py-16 border-2 border-dashed rounded-lg">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+          </svg>
+          <h2 class="mt-2 text-xl font-semibold text-gray-700">No Programs Yet</h2>
+          <p class="mt-1 text-gray-500">Get started by creating a new funeral program.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="form-view" class="view w-full max-w-3xl mx-auto">
+      <div class="bg-white p-8 md:p-10 rounded-2xl shadow-lg border border-gray-200">
+        <form id="obituary-form" novalidate>
+          <input type="hidden" name="frontCover.photoUrl" id="photo-url-input" />
+          <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-serif text-gray-800">Obituary Builder</h1>
+            <button type="button" id="form-back-to-dashboard" class="text-sm text-gray-600 hover:text-indigo-600">&larr;
+              Back to Dashboard</button>
+          </div>
+          <div class="mb-8">
+            <div class="flex justify-end mb-1">
+              <span id="step-counter" class="text-sm font-medium text-indigo-700"></span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+              <div id="progress-bar" class="bg-indigo-600 h-2.5 rounded-full" style="width:0%"></div>
+            </div>
+          </div>
+
+          <div id="step-1" class="form-step active">
+            <h2 class="text-xl font-semibold mb-6 text-gray-700 border-b pb-3">Front Cover Details</h2>
+            <div class="space-y-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Cover Title <span
+                    class="text-red-500">*</span></label>
+                <select name="frontCover.title" class="w-full p-2 border rounded-lg bg-white" required></select>
+                <p class="text-xs text-gray-500 mt-1">Select the main heading for the program cover.</p>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label for="prefix-select" class="block text-sm font-medium text-gray-600 mb-1">Prefix</label>
+                  <select name="frontCover.prefix" id="prefix-select"
+                    class="w-full p-2 border rounded-lg bg-white"></select>
+                  <p class="text-xs text-gray-500 mt-1">Select an optional title. The list is grouped by category for
+                    your convenience.</p>
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-sm font-medium text-gray-600 mb-1">Deceased's Full Name <span
+                      class="text-red-500">*</span></label>
+                  <input type="text" name="frontCover.fullName" class="w-full p-2 border rounded-lg"
+                    placeholder="Deceased's full name" required />
+                  <p class="text-xs text-gray-500 mt-1">Please enter the name exactly as it should appear on the
+                    program.</p>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Cover Photo</label>
+                <div id="photo-upload-area"
+                  class="mt-1 h-48 flex items-center justify-center bg-gray-50 border-2 border-gray-300 border-dashed rounded-lg photo-upload-container">
+                  <div id="photo-placeholder" class="space-y-1 text-center">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48"
+                      aria-hidden="true">
+                      <path
+                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                    <div class="flex text-sm text-gray-600">
+                      <label for="photo-upload-input"
+                        class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                        <span>Upload a photo</span>
+                        <input id="photo-upload-input" name="photo-upload" type="file" class="sr-only" accept="image/*">
+                      </label>
+                      <p class="pl-1">or drag and drop</p>
+                    </div>
+                    <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                  </div>
+                  <div id="photo-preview-overlay"
+                    class="photo-preview-overlay absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center gap-4">
+                    <button type="button" id="edit-photo-btn"
+                      class="p-2 bg-white rounded-full shadow-md hover:bg-gray-200" title="Edit Photo">
+                      <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z">
+                        </path>
+                      </svg>
+                    </button>
+                    <button type="button" id="change-photo-btn"
+                      class="p-2 bg-white rounded-full shadow-md hover:bg-gray-200" title="Change Photo">
+                      <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 4v5h5M20 20v-5h-5M4 20h5v-5M20 4h-5v5"></path>
+                      </svg>
+                    </button>
+                    <button type="button" id="remove-photo-btn"
+                      class="p-2 bg-white rounded-full shadow-md hover:bg-gray-200" title="Remove Photo">
+                      <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                        </path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div id="photo-upload-progress" class="hidden mt-3 upload-progress">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-700">Uploading photo...</span>
+                    <span id="upload-percentage" class="text-sm text-gray-600">0%</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-3 shadow-inner">
+                    <div id="photo-progress-bar" class="progress-bar h-3 rounded-full shadow-sm" style="width: 0%">
+                    </div>
+                  </div>
+                  <div class="flex items-center mt-2">
+                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-600" xmlns="http://www.w3.org/2000/svg"
+                      fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                      </path>
+                    </svg>
+                    <span id="upload-status" class="text-sm text-gray-600">Processing...</span>
+                  </div>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-1">Sunrise (DOB) <span
+                      class="text-red-500">*</span></label>
+                  <input type="date" name="frontCover.dob" class="w-full p-2 border rounded-lg" data-format-target="dob"
+                    required />
+                  <p id="dob-formatted" class="text-sm text-indigo-600 font-medium mt-1 pl-1 h-5"></p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-1">Sunset (DOP) <span
+                      class="text-red-500">*</span></label>
+                  <input type="date" name="frontCover.dop" class="w-full p-2 border rounded-lg" data-format-target="dop"
+                    required />
+                  <p id="dop-formatted" class="text-sm text-indigo-600 font-medium mt-1 pl-1 h-5"></p>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Date of Funeral</label>
+                <input type="date" name="frontCover.service.dateRaw" class="w-full p-2 border rounded-lg"
+                  data-format-target="funeralDate" />
+                <p id="funeral-date-formatted" class="text-sm text-indigo-600 font-medium mt-1 pl-1 h-5"></p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-2">Time of Funeral <span
+                    class="text-red-500">*</span></label>
+                <input type="time" name="frontCover.service.timeStandard" class="w-full p-2 border rounded-lg"
+                  data-format-target="time" required />
+                <p id="time-formatted" class="text-sm text-indigo-600 font-medium mt-1 pl-1 h-5"></p>
+              </div>
+
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-600">Funeral Location <span
+                    class="text-red-500">*</span></label>
+                <div class="relative">
+                  <input type="text" name="frontCover.venue.name" placeholder="Name of Church or Venue"
+                    class="w-full p-2 border rounded-lg" required />
+                  <div id="venue-suggestions" class="hidden"></div>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Start typing to search for a known venue or enter a new one.</p>
+                <input type="text" name="frontCover.venue.street" placeholder="Street Address"
+                  class="w-full p-2 border rounded-lg" required />
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <input type="text" name="frontCover.venue.city" placeholder="City"
+                    class="w-full p-2 border rounded-lg" required />
+                  <input type="text" name="frontCover.venue.state" placeholder="State"
+                    class="w-full p-2 border rounded-lg" required />
+                  <input type="text" name="frontCover.venue.zip" placeholder="Zip" class="w-full p-2 border rounded-lg"
+                    required />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-1 mt-2">Venue Type <span
+                      class="text-red-500">*</span></label>
+                  <select name="frontCover.venue.type"
+                    class="w-full p-2 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500" required>
+                    <option value="">Select Venue Type</option>
+                    <option value="Funeral Home">Funeral Home</option>
+                    <option value="Church">Church</option>
+                    <option value="Chapel">Chapel</option>
+                    <option value="Cemetery / Graveside">Cemetery / Graveside</option>
+                    <option value="Family Home / Residence">Family Home / Residence</option>
+                    <option value="Community Center">Community Center</option>
+                    <option value="Mausoleum">Mausoleum</option>
+                    <option value="Veterans Hall / Lodge">Veterans Hall / Lodge</option>
+                    <option value="Event Center / Banquet Hall">Event Center / Banquet Hall</option>
+                    <option value="Park / Garden">Park / Garden</option>
+                    <option value="Cultural Center">Cultural Center</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <p class="text-xs text-gray-500 mt-1">This is for categorization and will not appear on the program.
+                  </p>
+                </div>
+                <div id="other-venue-type-container" class="mt-2 hidden">
+                  <label class="block text-sm font-medium text-gray-600 mb-1">Please Specify Venue Type <span
+                      class="text-red-500">*</span></label>
+                  <input type="text" name="frontCover.venue.otherType"
+                    class="w-full p-2 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500">
+                </div>
+              </div>
+
+              <div>
+                <label for="host-pastor" class="block text-sm font-medium text-gray-600 mb-1">Host Pastor</label>
+                <input id="host-pastor" type="text" name="frontCover.venue.pastor"
+                  placeholder="e.g., Bishop Aubrey L. White, Pastor" class="w-full p-2 border rounded-lg" />
+                <p class="text-xs text-gray-500 mt-1">Optional. The pastor of the church where the service is held.</p>
+              </div>
+
+              <div>
+                <label for="officiant" class="block text-sm font-medium text-gray-600 mb-1">Officiant <span
+                    class="text-red-500">*</span></label>
+                <input id="officiant" type="text" name="frontCover.officiant" placeholder="Name of Officiant"
+                  class="w-full p-2 border rounded-lg" required />
+                <p class="text-xs text-gray-500 mt-1">The person conducting the service. Include titles if applicable
+                  (e.g., Rev., Dr.).</p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-2">Is the Officiant also the Eulogist? <span
+                    class="text-red-500">*</span></label>
+                <div class="flex items-center space-x-4">
+                  <label><input type="radio" name="eulogistSame" value="yes" class="mr-1" checked /> Yes</label>
+                  <label><input type="radio" name="eulogistSame" value="no" class="mr-1" /> No</label>
+                </div>
+                <div id="eulogist-input-container" class="mt-2 hidden">
+                  <label for="eulogist" class="block text-sm font-medium text-gray-600 mb-1">Eulogist</label>
+                  <input id="eulogist" type="text" name="frontCover.eulogist" placeholder="Name of Eulogist"
+                    class="w-full p-2 border rounded-lg" />
+                  <p class="text-xs text-gray-500 mt-1">The person delivering the eulogy. Include titles if applicable.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-8 flex justify-end">
+              <div>
+                <button type="button"
+                  class="save-progress-button bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Save</button>
+                <button type="button"
+                  class="next-button bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700 ml-2">Next</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="step-2" class="form-step life-story"">
+            <h2 class=" text-xl font-semibold mb-6 text-gray-700 border-b pb-3">Life Story Information</h2>
+            <div class="page-intro">
+              <div class="page-intro-box">This page collects detailed information about your loved one’s life story. The
+                information you provide here will be used to create a complete and meaningful obituary. Please take your
+                time to fill out each section carefully. If some fields do not apply, you may leave them blank. Some
+                items may seem repetitive, but this is necessary for the system to generate a well-written and
+                appropriate life story.</div>
+            </div>
+
+            <div class="space-y-8">
+
+              <!-- Tone Selection -->
+              <div class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Obituary Tone</h3>
+                <div>
+                  <label for="obituary-tone" class="block text-sm font-medium text-gray-600 mb-1">Select the tone for
+                    the obituary</label>
+                  <select id="obituary-tone" name="tone.style" class="w-full p-2 border rounded-lg bg-white">
+                    <option value="">Select Tone</option>
+                    <option value="Traditional and Formal">Traditional and Formal</option>
+                    <option value="Warm and Personal">Warm and Personal</option>
+                    <option value="Celebratory and Uplifting">Celebratory and Uplifting</option>
+                    <option value="Spiritual and Faith-Centered">Spiritual and Faith-Centered</option>
+                    <option value="Simple and Dignified">Simple and Dignified</option>
+                    <option value="Storytelling and Narrative">Storytelling and Narrative</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- 1) Personal Information -->
+              <div class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Personal Information</h3>
+                
+                <!-- Info box explaining auto-synced fields -->
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+                  <div class="flex">
+                    <div class="flex-shrink-0">
+                      <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm text-blue-700">
+                        <strong>Note:</strong> Some fields below are automatically filled from Step 1 (Front Cover Details) and cannot be edited here. To change these values, go back to Step 1.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label for="full-legal-name" class="block text-sm font-medium text-gray-600 mb-1">Full Legal Name
+                      <span class="text-red-500">*</span>
+                      <span class="text-xs text-blue-600 ml-1">(from Step 1)</span>
+                    </label>
+                    <input type="text" id="full-legal-name" name="personal.fullLegalName"
+                      class="w-full p-2 border rounded-lg bg-blue-50 cursor-not-allowed" readonly 
+                      data-synced-from="frontCover.fullName"
+                      title="This field is synced from Step 1. Go back to Step 1 to edit." /><small class="field-error" role="alert"
+                      aria-live="polite"></small>
+                  </div>
+                  <div>
+                    <label for="nicknames" class="block text-sm font-medium text-gray-600 mb-1">Nicknames / Affectionate
+                      Names</label>
+                    <input type="text" id="nicknames" name="personal.nicknames" class="w-full p-2 border rounded-lg" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label for="gender" class="block text-sm font-medium text-gray-600 mb-1">Gender</label>
+                    <select id="gender" name="personal.gender" class="w-full p-2 border rounded-lg bg-white">
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Non-Binary">Non-Binary</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="pronouns" class="block text-sm font-medium text-gray-600 mb-1">Preferred
+                      Pronouns</label>
+                    <select id="pronouns" name="personal.pronouns" class="w-full p-2 border rounded-lg bg-white">
+                      <option value="">Select Pronouns</option>
+                      <option value="He/Him">He/Him</option>
+                      <option value="She/Her">She/Her</option>
+                      <option value="They/Them">They/Them</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div id="custom-pronouns-container" class="hidden">
+                  <label for="custom-pronouns" class="block text-sm font-medium text-gray-600 mb-1">Custom
+                    Pronouns</label>
+                  <input type="text" id="custom-pronouns" name="personal.customPronouns"
+                    class="w-full p-2 border rounded-lg" placeholder="Enter custom pronouns" />
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label for="date-of-birth" class="block text-sm font-medium text-gray-600 mb-1">Date of Birth <span
+                        class="text-red-500">*</span>
+                      <span class="text-xs text-blue-600 ml-1">(from Step 1)</span>
+                    </label>
+                    <input type="date" id="date-of-birth" name="personal.dateOfBirth"
+                      class="w-full p-2 border rounded-lg bg-blue-50 cursor-not-allowed" readonly 
+                      data-synced-from="frontCover.dob"
+                      title="This field is synced from Step 1. Go back to Step 1 to edit." /><small class="field-error" role="alert"
+                      aria-live="polite"></small>
+                    <p id="birth-date-preview" class="text-sm text-indigo-600 font-medium mt-1 pl-1 h-5"></p>
+                  </div>
+                  <div>
+                    <label for="place-of-birth" class="block text-sm font-medium text-gray-600 mb-1">Place of Birth
+                      (City, State)</label>
+                    <input type="text" id="place-of-birth" name="personal.placeOfBirth"
+                      class="w-full p-2 border rounded-lg" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label for="date-of-death" class="block text-sm font-medium text-gray-600 mb-1">Date of
+                      Death
+                      <span class="text-xs text-blue-600 ml-1">(from Step 1)</span>
+                    </label>
+                    <input type="date" id="date-of-death" name="personal.dateOfDeath"
+                      class="w-full p-2 border rounded-lg bg-blue-50 cursor-not-allowed" readonly 
+                      data-synced-from="frontCover.dop"
+                      title="This field is synced from Step 1. Go back to Step 1 to edit." /><small class="field-error" role="alert"
+                      aria-live="polite"></small>
+                    <p id="death-date-preview" class="text-sm text-indigo-600 font-medium mt-1 pl-1 h-5"></p>
+                  </div>
+                  <div>
+                    <label for="place-of-death" class="block text-sm font-medium text-gray-600 mb-1">Place of Death
+                      (City, State)</label>
+                    <input type="text" id="place-of-death" name="personal.placeOfDeath"
+                      class="w-full p-2 border rounded-lg" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label for="age-at-passing" class="block text-sm font-medium text-gray-600 mb-1">Age at
+                      Passing</label>
+                    <input type="text" id="age-at-passing" name="personal.ageAtPassing"
+                      class="w-full p-2 border rounded-lg bg-gray-50" readonly />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2) Faith & Religious Background -->
+              <div class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Faith & Religious Background
+                </h3>
+
+                <div>
+                  <label for="religious-affiliation" class="block text-sm font-medium text-gray-600 mb-1">Religious
+                    Affiliation / Faith Tradition</label>
+                  <select id="religious-affiliation" name="faith.religiousAffiliation"
+                    class="w-full p-2 border rounded-lg bg-white">
+                    <option value="">Select Faith Tradition</option>
+                    <option value="Christian">Christian</option>
+                    <option value="Muslim">Muslim</option>
+                    <option value="Jewish">Jewish</option>
+                    <option value="None">None</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div id="religious-other-container" class="hidden">
+                  <label for="religious-other-text" class="block text-sm font-medium text-gray-600 mb-1">Please specify
+                    religious affiliation or note if not religious</label>
+                  <input type="text" id="religious-other-text" name="faith.religiousAffiliationOther"
+                    class="w-full p-2 border rounded-lg" placeholder="Enter details about religious affiliation" />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Church Membership</label>
+                  <div id="church-memberships-container" class="space-y-3">
+                    <div class="church-entry p-3 border rounded-lg bg-gray-50">
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
+                        <input type="text" name="faith.churchMemberships.0.churchName" class="p-2 border rounded-lg"
+                          placeholder="Church Name" />
+                        <input type="text" name="faith.churchMemberships.0.location" class="p-2 border rounded-lg"
+                          placeholder="Location (City, State)" />
+                        <input type="text" name="faith.churchMemberships.0.timeframe" class="p-2 border rounded-lg"
+                          placeholder="Years/Timeframe" /><small class="field-instructions">Enter years as YYYY–YYYY
+                          (e.g., 2004–2011).</small>
+                      </div>
+                      <div class="mb-3">
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Ministry Roles / Service at this
+                          Church</label>
+                        <textarea name="faith.churchMemberships.0.ministryRoles" rows="2"
+                          class="w-full p-2 border rounded-lg"
+                          placeholder="Describe ministry roles and service"></textarea>
+                      </div>
+                      <div class="mb-3">
+                        <label class="block text-sm font-medium text-gray-600 mb-2">Baptized here?</label>
+                        <div class="flex gap-4">
+                          <label class="flex items-center">
+                            <input type="radio" name="faith.churchMemberships.0.baptized" value="Yes" class="mr-2" />
+                            <span class="text-sm">Yes</span>
+                          </label>
+                          <label class="flex items-center">
+                            <input type="radio" name="faith.churchMemberships.0.baptized" value="No" class="mr-2" />
+                            <span class="text-sm">No</span>
+                          </label>
+                        </div>
+                      </div>
+                      <div class="baptism-details-0 hidden mb-3 pl-4 border-l-2 border-gray-200">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                          <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Baptism Date</label>
+                            <input type="date" name="faith.churchMemberships.0.baptismDate"
+                              class="w-full p-2 border rounded-lg" /><small class="field-error" role="alert"
+                              aria-live="polite"></small>
+                            <p class="baptism-date-preview-0 text-sm text-indigo-600 font-medium mt-1 pl-1 h-5"></p>
+                          </div>
+                          <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Baptism Officiant</label>
+                            <input type="text" name="faith.churchMemberships.0.baptismOfficiant"
+                              class="w-full p-2 border rounded-lg" placeholder="Name of officiant" />
+                          </div>
+                        </div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="block text-sm font-medium text-gray-600 mb-2">Got saved here?</label>
+                        <div class="flex gap-4">
+                          <label class="flex items-center">
+                            <input type="radio" name="faith.churchMemberships.0.salvation" value="Yes" class="mr-2" />
+                            <span class="text-sm">Yes</span>
+                          </label>
+                          <label class="flex items-center">
+                            <input type="radio" name="faith.churchMemberships.0.salvation" value="No" class="mr-2" />
+                            <span class="text-sm">No</span>
+                          </label>
+                        </div>
+                      </div>
+                      <div class="salvation-details-0 hidden mb-3 pl-4 border-l-2 border-gray-200">
+                        <div>
+                          <label class="block text-sm font-medium text-gray-600 mb-1">Date/Stage of Salvation</label>
+                          <input type="text" name="faith.churchMemberships.0.salvationDate"
+                            class="w-full p-2 border rounded-lg" placeholder="Date or stage of salvation" />
+                        </div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Notes / Memories about this
+                          Church</label>
+                        <textarea name="faith.churchMemberships.0.notes" rows="2" class="w-full p-2 border rounded-lg"
+                          placeholder="Optional notes and memories"></textarea>
+                      </div>
+                      <button type="button"
+                        class="remove-church px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove
+                        Membership</button>
+                    </div>
+                  </div>
+                  <button type="button" id="add-church"
+                    class="mt-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm">Add
+                    Membership</button>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="mt-8 flex justify-between">
+              <button type="button"
+                class="prev-button bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700">Previous</button>
+              <div>
+                <button type="button"
+                  class="save-progress-button bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Save</button>
+                <button type="button"
+                  class="next-button bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700 ml-2">Next</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Education, Career, Hobbies & Personality -->
+          <div id="step-3" class="form-step">
+            <h2 class="text-xl font-semibold mb-6 text-gray-700 border-b pb-3">Education, Career & Interests</h2>
+            
+            <div class="space-y-8">
+
+              <!-- 3) Education -->
+              <div class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Education</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label for="high-school" class="block text-sm font-medium text-gray-600 mb-1">High School
+                      Attended</label>
+                    <input type="text" id="high-school" name="education.highSchool"
+                      class="w-full p-2 border rounded-lg" />
+                  </div>
+                  <div>
+                    <label for="graduation-year" class="block text-sm font-medium text-gray-600 mb-1">Graduation
+                      Year</label>
+                    <input type="text" id="graduation-year" name="education.graduationYear"
+                      class="w-full p-2 border rounded-lg" pattern="^\d{4}$" placeholder="YYYY" />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">College(s)/University(ies)</label>
+                  <div id="colleges-container" class="space-y-3">
+                    <div class="college-entry p-3 border rounded-lg bg-gray-50">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+                        <input type="text" name="education.colleges.0.schoolName" class="p-2 border rounded-lg"
+                          placeholder="School Name" />
+                        <input type="text" name="education.colleges.0.graduationYear" class="p-2 border rounded-lg"
+                          pattern="^\d{4}$" placeholder="Graduation Year (YYYY)" /><small class="field-error"
+                          role="alert" aria-live="polite"></small><small class="field-instructions">Enter only the year
+                          (YYYY).</small>
+                      </div>
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
+                        <input type="text" name="education.colleges.0.city" class="p-2 border rounded-lg"
+                          placeholder="City" />
+                        <input type="text" name="education.colleges.0.state" class="p-2 border rounded-lg"
+                          placeholder="State" />
+                        <input type="text" name="education.colleges.0.degree" class="p-2 border rounded-lg"
+                          placeholder="Degree / Studies Completed" />
+                      </div>
+                      <div class="mb-3">
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Activities / Organizations at this
+                          School</label>
+                        <textarea name="education.colleges.0.activities" rows="2" class="w-full p-2 border rounded-lg"
+                          placeholder="Clubs, fraternities/sororities, sports, leadership, etc."></textarea>
+                      </div>
+                      <button type="button"
+                        class="remove-college px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove
+                        College/University</button>
+                    </div>
+                  </div>
+                  <button type="button" id="add-college"
+                    class="mt-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm">Add
+                    College/University</button>
+                </div>
+              </div>
+
+              <!-- 4) Career -->
+              <div class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Career</h3>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Employers / Occupations</label>
+                  <div id="employers-container" class="space-y-3">
+                    <div class="employer-entry p-3 border rounded-lg bg-gray-50">
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                        <input type="text" name="career.employers.0.companyName" class="p-2 border rounded-lg"
+                          placeholder="Company Name" />
+                        <input type="text" name="career.employers.0.location" class="p-2 border rounded-lg"
+                          placeholder="Location" />
+                        <input type="text" name="career.employers.0.role" class="p-2 border rounded-lg"
+                          placeholder="Role" />
+                      </div>
+                      <button type="button"
+                        class="remove-employer px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove
+                        Employer</button>
+                    </div>
+                  </div>
+                  <button type="button" id="add-employer"
+                    class="mt-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm">Add
+                    Employer</button>
+                </div>
+
+                <fieldset class="space-y-3">
+                  <legend class="text-sm font-medium text-gray-600">Military Service</legend>
+                  <div class="flex gap-4">
+                    <label class="flex items-center">
+                      <input type="radio" name="career.militaryService" value="Yes" class="mr-2" />
+                      <span class="text-sm">Yes</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="radio" name="career.militaryService" value="No" class="mr-2" checked />
+                      <span class="text-sm">No</span>
+                    </label>
+                  </div>
+
+                  <div id="military-details" class="hidden space-y-3 pl-4 border-l-2 border-gray-200">
+                    <div>
+                      <label for="military-branch" class="block text-sm font-medium text-gray-600 mb-1">Branch</label>
+                      <select id="military-branch" name="career.militaryBranch"
+                        class="w-full p-2 border rounded-lg bg-white">
+                        <option value="">Select Branch</option>
+                        <option value="Army">Army</option>
+                        <option value="Navy">Navy</option>
+                        <option value="Air Force">Air Force</option>
+                        <option value="Marines">Marines</option>
+                        <option value="Coast Guard">Coast Guard</option>
+                        <option value="National Guard">National Guard</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="military-rank" class="block text-sm font-medium text-gray-600 mb-1">Rank/Position
+                        Held</label>
+                      <input type="text" id="military-rank" name="career.militaryRank"
+                        class="w-full p-2 border rounded-lg" placeholder="Rank or position held" />
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label for="service-start-year" class="block text-sm font-medium text-gray-600 mb-1">Start
+                          Year</label>
+                        <input type="text" id="service-start-year" name="career.serviceStartYear"
+                          class="w-full p-2 border rounded-lg" pattern="^\d{4}$" placeholder="YYYY" />
+                      </div>
+                      <div>
+                        <label for="service-end-year" class="block text-sm font-medium text-gray-600 mb-1">End
+                          Year</label>
+                        <input type="text" id="service-end-year" name="career.serviceEndYear"
+                          class="w-full p-2 border rounded-lg" pattern="^\d{4}$" placeholder="YYYY" />
+                      </div>
+                    </div>
+                    <div>
+                      <label for="military-details-text" class="block text-sm font-medium text-gray-600 mb-1">Additional
+                        Details</label>
+                      <textarea id="military-details-text" name="career.militaryDetailsText" rows="3"
+                        class="w-full p-2 border rounded-lg"
+                        placeholder="Optional in-depth information about military service"></textarea>
+                    </div>
+                  </div>
+                </fieldset>
+              </div>
+
+              <!-- 5) Hobbies, Passions, and Skills -->
+              <div class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Hobbies, Passions, and
+                  Skills</h3>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Hobbies/Passions (select any)</label>
+                  <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <label class="flex items-center">
+                      <input type="checkbox" name="hobbies.passions" value="Poetry" class="mr-2" />
+                      <span class="text-sm">Poetry</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" name="hobbies.passions" value="Singing" class="mr-2" />
+                      <span class="text-sm">Singing</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" name="hobbies.passions" value="Dancing" class="mr-2" />
+                      <span class="text-sm">Dancing</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" name="hobbies.passions" value="Cooking" class="mr-2" />
+                      <span class="text-sm">Cooking</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" name="hobbies.passions" value="Musical Instruments" class="mr-2" />
+                      <span class="text-sm">Musical Instruments</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" name="hobbies.passions" value="Sports" class="mr-2" />
+                      <span class="text-sm">Sports</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" name="hobbies.passions" value="Other" class="mr-2"
+                        id="hobbies-other-checkbox" />
+                      <span class="text-sm">Other</span>
+                    </label>
+                  </div>
+                  <div id="hobbies-other-container" class="hidden mt-2">
+                    <label for="hobbies-other-text" class="block text-sm font-medium text-gray-600 mb-1">Other
+                      (describe)</label>
+                    <input type="text" id="hobbies-other-text" name="hobbies.passionsOther"
+                      class="w-full p-2 border rounded-lg" />
+                  </div>
+                </div>
+
+                <div>
+                  <label for="special-skills" class="block text-sm font-medium text-gray-600 mb-1">Special
+                    Skills</label>
+                  <input type="text" id="special-skills" name="hobbies.specialSkills"
+                    class="w-full p-2 border rounded-lg" />
+                </div>
+              </div>
+
+              <!-- 6) Personality & Legacy -->
+              <div class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Personality & Legacy</h3>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Known For (select all that apply)</label>
+                  <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <label class="flex items-center">
+                      <input type="checkbox" name="personality.knownFor" value="Humor" class="mr-2" />
+                      <span class="text-sm">Humor</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" name="personality.knownFor" value="Compassion" class="mr-2" />
+                      <span class="text-sm">Compassion</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" name="personality.knownFor" value="Energy" class="mr-2" />
+                      <span class="text-sm">Energy</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" name="personality.knownFor" value="Hospitality" class="mr-2" />
+                      <span class="text-sm">Hospitality</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" name="personality.knownFor" value="Storytelling" class="mr-2" />
+                      <span class="text-sm">Storytelling</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" name="personality.knownFor" value="Other" class="mr-2"
+                        id="personality-other-checkbox" />
+                      <span class="text-sm">Other</span>
+                    </label>
+                  </div>
+                  <div id="personality-other-container" class="hidden mt-2">
+                    <label for="personality-other-text" class="block text-sm font-medium text-gray-600 mb-1">Other
+                      (describe)</label>
+                    <input type="text" id="personality-other-text" name="personality.knownForOther"
+                      class="w-full p-2 border rounded-lg" />
+                  </div>
+                </div>
+
+                <div>
+                  <label for="favorite-sayings" class="block text-sm font-medium text-gray-600 mb-1">Favorite Sayings /
+                    Personal Traits</label>
+                  <input type="text" id="favorite-sayings" name="personality.favoriteSayings"
+                    class="w-full p-2 border rounded-lg" />
+                </div>
+              </div>
+
+            </div>
+
+            <div class="mt-8 flex justify-between">
+              <button type="button"
+                class="prev-button bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700">Previous</button>
+              <div>
+                <button type="button"
+                  class="save-progress-button bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Save</button>
+                <button type="button"
+                  class="next-button bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700 ml-2">Next</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Family & Additional Information -->
+          <div id="step-4" class="form-step">
+            <h2 class="text-xl font-semibold mb-6 text-gray-700 border-b pb-3">Family & Additional Information</h2>
+            
+            <div class="space-y-8">
+
+              <!-- 7) Preceded in Death -->
+              <div class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Preceded in Death</h3>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Relatives Preceded in Death By</label>
+                  <div id="preceded-container" class="space-y-3">
+                    <div class="preceded-entry p-3 border rounded-lg bg-gray-50">
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                        <input type="text" name="preceded.0.name" class="p-2 border rounded-lg" placeholder="Name" />
+                        <input type="text" name="preceded.0.relationship" class="p-2 border rounded-lg"
+                          placeholder="Relationship" />
+                        <input type="text" name="preceded.0.location" class="p-2 border rounded-lg"
+                          placeholder="City/State (optional)" />
+                      </div>
+                      <button type="button"
+                        class="remove-preceded px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove
+                        Person</button>
+                    </div>
+                  </div>
+                  <button type="button" id="add-preceded"
+                    class="mt-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm">Add
+                    Person</button>
+                </div>
+              </div>
+
+              <!-- 8) Surviving Family -->
+              <div class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Surviving Family</h3>
+
+                <!-- Spouse/Marriage Information -->
+                <div class="space-y-4">
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Was the deceased married?</label>
+                  <div class="flex gap-4 mb-4">
+                    <label class="flex items-center">
+                      <input type="radio" name="surviving.marriageStatus" value="yes" class="mr-2" id="marriage-yes" />
+                      <span class="text-sm">Yes</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="radio" name="surviving.marriageStatus" value="no" class="mr-2" id="marriage-no" />
+                      <span class="text-sm">No</span>
+                    </label>
+                  </div>
+
+                  <!-- Marriage Details Container (shown when "Yes" is selected) -->
+                  <div id="marriage-details-container" class="hidden space-y-4 p-4 border rounded-lg bg-blue-50">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label for="spouse-name" class="block text-sm font-medium text-gray-600 mb-1">Spouse's Name</label>
+                        <input type="text" id="spouse-name" name="surviving.spouse.name" class="w-full p-2 border rounded-lg" placeholder="Enter spouse's full name" />
+                      </div>
+                      <div>
+                        <label for="marriage-year" class="block text-sm font-medium text-gray-600 mb-1">Year Married</label>
+                        <input type="text" id="marriage-year" name="surviving.spouse.marriageYear" class="w-full p-2 border rounded-lg" placeholder="e.g., 1995" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="marriage-location" class="block text-sm font-medium text-gray-600 mb-1">Where They Were Married (City, State)</label>
+                      <input type="text" id="marriage-location" name="surviving.spouse.marriageLocation" class="w-full p-2 border rounded-lg" placeholder="e.g., Dallas, Texas" />
+                    </div>
+
+                    <div>
+                      <label for="marriage-details" class="block text-sm font-medium text-gray-600 mb-1">Marriage Details (optional)</label>
+                      <textarea id="marriage-details" name="surviving.spouse.marriageDetails" rows="3" class="w-full p-2 border rounded-lg" placeholder="Include any special details about their marriage"></textarea>
+                    </div>
+
+                    <!-- Spouse Status -->
+                    <div class="border-t pt-4">
+                      <label class="flex items-center mb-3">
+                        <input type="checkbox" id="spouse-deceased" name="surviving.spouse.deceased" class="mr-2" />
+                        <span class="text-sm font-medium text-gray-600">Spouse is Deceased</span>
+                      </label>
+
+                      <!-- Spouse Death Details (shown when deceased checkbox is checked) -->
+                      <div id="spouse-death-details" class="hidden space-y-3 pl-6 border-l-2 border-gray-300">
+                        <div>
+                          <label for="spouse-death-date" class="block text-sm font-medium text-gray-600 mb-1">Spouse's Date of Death</label>
+                          <input type="date" id="spouse-death-date" name="surviving.spouse.deathDate" class="w-full p-2 border rounded-lg" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Parents</label>
+                  <div id="parents-container" class="space-y-3">
+                    <div class="parent-entry p-3 border rounded-lg bg-gray-50">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                        <select name="surviving.parents.0.relationship" class="p-2 border rounded-lg bg-white">
+                          <option value="">Relationship</option>
+                          <option value="Mother">Mother</option>
+                          <option value="Father">Father</option>
+                        </select>
+                        <input type="text" name="surviving.parents.0.name" class="p-2 border rounded-lg"
+                          placeholder="Name" />
+                      </div>
+                      <div class="mb-3">
+                        <label class="flex items-center">
+                          <input type="checkbox" name="surviving.parents.0.deceased" class="mr-2 parent-deceased-checkbox" />
+                          <span class="text-sm font-medium text-gray-700">This parent is deceased</span>
+                        </label>
+                      </div>
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                        <input type="text" name="surviving.parents.0.location" class="p-2 border rounded-lg"
+                          placeholder="Location (City, State)" />
+                        <input type="text" name="surviving.parents.0.spouse" class="p-2 border rounded-lg"
+                          placeholder="Spouse (optional)" />
+                      </div>
+                      <button type="button"
+                        class="remove-parent px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove</button>
+                    </div>
+                  </div>
+                  <button type="button" id="add-parent"
+                    class="mt-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm">Add
+                    Parent</button>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Siblings</label>
+                  <div id="siblings-container" class="space-y-3">
+                    <div class="sibling-entry p-3 border rounded-lg bg-gray-50">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                        <input type="text" name="surviving.siblings.0.name" class="p-2 border rounded-lg"
+                          placeholder="Name" />
+                        <select name="surviving.siblings.0.relationshipType" class="p-2 border rounded-lg bg-white">
+                          <option value="">Relationship Type</option>
+                          <option value="Brother">Brother</option>
+                          <option value="Sister">Sister</option>
+                        </select>
+                      </div>
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                        <input type="text" name="surviving.siblings.0.location" class="p-2 border rounded-lg"
+                          placeholder="Location" />
+                        <input type="text" name="surviving.siblings.0.spouse" class="p-2 border rounded-lg"
+                          placeholder="Spouse (optional)" />
+                      </div>
+                      <button type="button"
+                        class="remove-sibling px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove</button>
+                    </div>
+                  </div>
+                  <button type="button" id="add-sibling"
+                    class="mt-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm">Add
+                    Sibling</button>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Grandparents</label>
+                  <div id="grandparents-container" class="space-y-3">
+                    <div class="grandparent-entry p-3 border rounded-lg bg-gray-50">
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                        <input type="text" name="surviving.grandparents.0.name" class="p-2 border rounded-lg"
+                          placeholder="Name" />
+                        <input type="text" name="surviving.grandparents.0.location" class="p-2 border rounded-lg"
+                          placeholder="Location" />
+                        <input type="text" name="surviving.grandparents.0.spouse" class="p-2 border rounded-lg"
+                          placeholder="Spouse (optional)" />
+                      </div>
+                      <div class="mb-2">
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Status</label>
+                        <div class="flex gap-4">
+                          <label class="flex items-center">
+                            <input type="radio" name="surviving.grandparents.0.status" value="Living" class="mr-2" />
+                            <span class="text-sm">Living</span>
+                          </label>
+                          <label class="flex items-center">
+                            <input type="radio" name="surviving.grandparents.0.status" value="Deceased" class="mr-2" />
+                            <span class="text-sm">Deceased</span>
+                          </label>
+                        </div>
+                      </div>
+                      <button type="button"
+                        class="remove-grandparent px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove</button>
+                    </div>
+                  </div>
+                  <button type="button" id="add-grandparent"
+                    class="mt-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm">Add
+                    Grandparent</button>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Children (if any)</label>
+                  <div id="children-container" class="space-y-3">
+                    <div class="child-entry p-3 border rounded-lg bg-gray-50">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                        <input type="text" name="surviving.children.0.name" class="p-2 border rounded-lg"
+                          placeholder="Name" />
+                        <select name="surviving.children.0.relationshipType" class="p-2 border rounded-lg bg-white">
+                          <option value="">Relationship Type</option>
+                          <option value="Son">Son</option>
+                          <option value="Daughter">Daughter</option>
+                          <option value="Stepchild">Stepchild</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                        <input type="text" name="surviving.children.0.location" class="p-2 border rounded-lg"
+                          placeholder="Location" />
+                        <input type="text" name="surviving.children.0.spouse" class="p-2 border rounded-lg"
+                          placeholder="Spouse (optional)" />
+                      </div>
+                      <button type="button"
+                        class="remove-child px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove</button>
+                    </div>
+                  </div>
+                  <button type="button" id="add-child"
+                    class="mt-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm">Add
+                    Child</button>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Godparents / Godsiblings</label>
+                  <div id="godparents-container" class="space-y-2">
+                    <div class="godparent-entry flex gap-2 items-center">
+                      <input type="text" name="surviving.godparents.0.name" class="flex-1 p-2 border rounded-lg"
+                        placeholder="Name" />
+                      <input type="text" name="surviving.godparents.0.description" class="flex-1 p-2 border rounded-lg"
+                        placeholder="Optional description" />
+                      <button type="button"
+                        class="remove-godparent px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove</button>
+                    </div>
+                  </div>
+                  <button type="button" id="add-godparent"
+                    class="mt-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm">Add
+                    Godparent/Godsibling</button>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Extended Family (Uncles, Aunts,
+                    Cousins)</label>
+                  <div id="extended-container" class="space-y-3">
+                    <div class="extended-entry p-3 border rounded-lg bg-gray-50">
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                        <input type="text" name="surviving.extended.0.name" class="p-2 border rounded-lg"
+                          placeholder="Name" />
+                        <select name="surviving.extended.0.relationship" class="p-2 border rounded-lg bg-white">
+                          <option value="">Relationship</option>
+                          <option value="Uncle">Uncle</option>
+                          <option value="Aunt">Aunt</option>
+                          <option value="Cousin">Cousin</option>
+                        </select>
+                        <input type="text" name="surviving.extended.0.location" class="p-2 border rounded-lg"
+                          placeholder="Location" />
+                      </div>
+                      <button type="button"
+                        class="remove-extended px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove</button>
+                    </div>
+                  </div>
+                  <button type="button" id="add-extended"
+                    class="mt-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm">Add Extended
+                    Family</button>
+                </div>
+              </div>
+
+              <!-- 9) Friends & Special People -->
+              <div class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Friends & Special People
+                </h3>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Special Friends</label>
+                  <div id="friends-container" class="space-y-3">
+                    <div class="friend-entry p-3 border rounded-lg bg-gray-50">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                        <input type="text" name="friends.special.0.name" class="p-2 border rounded-lg"
+                          placeholder="Name" />
+                        <input type="text" name="friends.special.0.description" class="p-2 border rounded-lg"
+                          placeholder="Description" />
+                      </div>
+                      <button type="button"
+                        class="remove-friend px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove</button>
+                    </div>
+                  </div>
+                  <button type="button" id="add-friend"
+                    class="mt-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm">Add Special
+                    Friend</button>
+                </div>
+
+                <div>
+                  <label for="close-classmates" class="block text-sm font-medium text-gray-600 mb-1">Close Classmates /
+                    Class Year</label>
+                  <input type="text" id="close-classmates" name="friends.classmates"
+                    class="w-full p-2 border rounded-lg" />
+                </div>
+
+                <div>
+                  <label for="special-relationships" class="block text-sm font-medium text-gray-600 mb-1">Other Special
+                    Relationships</label>
+                  <input type="text" id="special-relationships" name="friends.otherRelationships"
+                    class="w-full p-2 border rounded-lg" />
+                </div>
+              </div>
+
+              <!-- Additional Information -->
+              <div class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Additional Information</h3>
+
+                <div>
+                  <label for="other-information" class="block text-sm font-medium text-gray-600 mb-1">Other Information
+                    Not Asked For</label>
+                  <textarea id="other-information" name="additional.otherInformation" rows="6"
+                    class="w-full p-2 border rounded-lg"
+                    placeholder="Include any other information, stories, or details that haven't been covered in the sections above"></textarea><small
+                    class="field-instructions">Use this space to share any additional details not covered in the
+                    form.</small>
+                </div>
+              </div>
+
+              <!-- AI Obituary Generation Section -->
+              <div class="space-y-4 mt-8 p-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg border-2 border-indigo-200">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="text-xl font-semibold text-gray-800">Generate Written Obituary</h3>
+                    <p class="text-sm text-gray-600">Let AI create a beautiful obituary based on all the information you've provided</p>
+                  </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                  <p class="text-sm text-gray-600 mb-4">Click the button below to generate a written obituary. You can then review it, make corrections, and regenerate if needed.</p>
+                  
+                  <button type="button" id="generate-obituary-btn" class="gemini-button w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 transition-all duration-200 flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    Generate Obituary with AI
+                  </button>
+                  
+                  <!-- Loading State -->
+                  <div id="obituary-loading" class="hidden mt-4 text-center">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    <p class="text-sm text-gray-600 mt-2">Generating your obituary... This may take a moment.</p>
+                  </div>
+                  
+                  <!-- Error Message -->
+                  <div id="obituary-error" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-sm text-red-800"></p>
+                  </div>
+                </div>
+
+                <!-- Generated Obituary Preview Section -->
+                <div id="obituary-preview-section" class="hidden mt-6">
+                  <div class="bg-white p-6 rounded-lg shadow-md">
+                    <div class="flex items-center justify-between mb-4">
+                      <h4 class="text-lg font-semibold text-gray-800">Generated Obituary Preview</h4>
+                      <button type="button" id="preview-obituary-btn" class="bg-blue-100 text-blue-700 font-medium py-2 px-4 rounded-lg hover:bg-blue-200 transition-all duration-200 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                        View Full Preview
+                      </button>
+                    </div>
+                    
+                    <!-- Obituary Text Display -->
+                    <div id="obituary-text" class="prose max-w-none p-4 bg-gray-50 rounded border border-gray-200 mb-4" style="font-family: 'Merriweather', serif; line-height: 1.8;">
+                      <!-- Generated obituary will appear here -->
+                    </div>
+
+                    <!-- Corrections Section -->
+                    <div class="mt-4">
+                      <label for="obituary-corrections" class="block text-sm font-medium text-gray-700 mb-2">
+                        Need Changes? Describe Your Corrections
+                      </label>
+                      <textarea id="obituary-corrections" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Example: Please make the tone more formal, add mention of her love for gardening, change 'passed away' to 'went home to be with the Lord'"></textarea>
+                      
+                      <button type="button" id="regenerate-obituary-btn" class="mt-3 bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700 transition-all duration-200 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Regenerate with Corrections
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="mt-8 flex justify-between">
+              <button type="button"
+                class="prev-button bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700">Previous</button>
+              <div>
+                <button type="button"
+                  class="save-progress-button bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Save</button>
+                <button type="button"
+                  class="next-button bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700 ml-2">Next</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div id="photo-editor-modal" class="photo-editor-modal hidden">
+      <div class="photo-editor-container">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Edit Photo</h3>
+          <button id="close-editor" class="text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+        </div>
+
+        <div class="cropper-container">
+          <img id="editor-image" style="max-width: 100%;" />
+        </div>
+
+        <div class="editor-controls">
+          <button class="editor-btn" data-method="move" title="Move"><span>✋ Move</span></button>
+          <button class="editor-btn active" data-method="crop" title="Crop"><span>✂️ Crop</span></button>
+          <button class="editor-btn" data-method="zoom" data-option="0.1" title="Zoom In"><span>🔍+ Zoom
+              In</span></button>
+          <button class="editor-btn" data-method="zoom" data-option="-0.1" title="Zoom Out"><span>🔍- Zoom
+              Out</span></button>
+          <button class="editor-btn" data-method="rotate" data-option="90" title="Rotate Right"><span>↻
+              Rotate</span></button>
+          <button class="editor-btn" data-method="rotate" data-option="-90" title="Rotate Left"><span>↺
+              Rotate</span></button>
+          <button class="editor-btn" data-method="scaleX" data-option="-1" title="Flip Horizontal"><span>↔️ Flip
+              H</span></button>
+          <button class="editor-btn" data-method="scaleY" data-option="-1" title="Flip Vertical"><span>↕️ Flip
+              V</span></button>
+          <button class="editor-btn" data-method="reset" title="Reset"><span>🔄 Reset</span></button>
+        </div>
+
+        <div class="flex justify-between mt-6">
+          <button id="cancel-edit"
+            class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancel</button>
+          <button id="apply-edit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Apply
+            Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, addDoc, collection, query, where, onSnapshot, getDoc, getDocs, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCenIJ43YuNWi-jdfI01Y2BAZSODaXsIBc",
+      authDomain: "obituary-builders-d7576.firebaseapp.com",
+      projectId: "obituary-builders-d7576",
+      storageBucket: "obituary-builders-d7576.firebasestorage.app",
+      messagingSenderId: "1015601969677",
+      appId: "1:1015601969677:web:19f55c507413741fbbf344",
+      measurementId: "G-95D1G3VMGV"
+    };
+
+    const App = {
+      auth: null,
+      db: null,
+      storage: null,
+      user: null,
+      photoEditor: null,
+      currentObituaryId: null,
+      currentStep: 1,
+      totalSteps: 0,
+      obituariesUnsubscribe: null,
+      venueSearchTimeout: null,
+      viewDisplayModes: new Map(),
+      authInitializationTimer: null,
+      obituariesCache: new Map(),
+
+      async init() {
+        const app = initializeApp(firebaseConfig);
+        this.auth = getAuth(app);
+        this.db = getFirestore(app);
+        this.storage = getStorage(app);
+
+        this.prepareViews();
+        await this.loadSiteSettings();
+
+        this.showView('loading-view');
+        this.bindUI();
+        this.initPhotoEditor();
+        this.totalSteps = document.querySelectorAll('.form-step').length;
+
+        onAuthStateChanged(
+          this.auth,
+          (user) => this.onAuth(user),
+          (error) => {
+            console.error('Authentication state error:', error);
+            this.showView('login-view');
+            this.notify('Unable to verify authentication status. Please try again.', 'error');
+          }
+        );
+      },
+
+      async loadSiteSettings() {
+        const defaultBgUrl = 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?q=80&w=2070&auto=format&fit=crop';
+        try {
+          const settingsRef = doc(this.db, 'siteSettings', 'config');
+          const docSnap = await getDoc(settingsRef);
+
+          if (docSnap.exists() && docSnap.data().backgroundUrl) {
+            document.body.style.backgroundImage = `url('${docSnap.data().backgroundUrl}')`;
+          } else {
+            console.log("No custom background found, using default.");
+            document.body.style.backgroundImage = `url('${defaultBgUrl}')`;
+          }
+        } catch (error) {
+          console.error("Error loading site settings: ", error);
+          document.body.style.backgroundImage = `url('${defaultBgUrl}')`;
+        }
+      },
+
+      async loadFormOptions() {
+        try {
+          const formOptionsRef = collection(this.db, "formOptions");
+          const querySnapshot = await getDocs(formOptionsRef);
+
+          const optionsData = {};
+          querySnapshot.forEach(doc => {
+            optionsData[doc.id] = doc.data();
+          });
+
+          const selectTitleElement = document.querySelector('select[name="frontCover.title"]');
+          if (selectTitleElement && optionsData.coverTitles?.titles) {
+            selectTitleElement.innerHTML = '<option value="">Select a Title</option>';
+            optionsData.coverTitles.titles.forEach(title => {
+              const option = document.createElement('option');
+              option.value = title;
+              option.textContent = title;
+              selectTitleElement.appendChild(option);
+            });
+          }
+
+          const prefixSelect = document.getElementById('prefix-select');
+          prefixSelect.innerHTML = '<option value="">Select a Prefix (Optional)</option>';
+          const categoryOrder = ['general', 'clergy', 'military', 'politician'];
+
+          categoryOrder.forEach(categoryKey => {
+            if (optionsData[categoryKey] && optionsData[categoryKey].titles) {
+              const optgroup = document.createElement('optgroup');
+              optgroup.label = categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1);
+              optionsData[categoryKey].titles.forEach(title => {
+                const option = document.createElement('option');
+                option.value = title;
+                option.textContent = title;
+                optgroup.appendChild(option);
+              });
+              prefixSelect.appendChild(optgroup);
+            }
+          });
+
+        } catch (error) {
+          console.error("Error loading form options: ", error);
+          this.notify("Could not load form options from the database.", "error");
+        }
+      },
+
+      prepareViews() {
+        if (!this.viewDisplayModes) {
+          this.viewDisplayModes = new Map();
+        } else {
+          this.viewDisplayModes.clear();
+        }
+
+        document.querySelectorAll('.view').forEach(view => {
+          const display = this.detectViewDisplayMode(view);
+          view.dataset.originalDisplay = display;
+          if (view.id) {
+            this.viewDisplayModes.set(view.id, display);
+          }
+          view.hidden = true;
+          view.style.display = 'none';
+        });
+      },
+
+      showView(viewId) {
+        let targetView = null;
+        document.querySelectorAll('.view').forEach(view => {
+          const isTarget = view.id === viewId;
+          if (isTarget) {
+            const display = this.viewDisplayModes.get(viewId) || this.detectViewDisplayMode(view);
+            this.viewDisplayModes.set(viewId, display);
+            view.hidden = false;
+            view.style.display = display;
+            targetView = view;
+          } else {
+            view.hidden = true;
+            view.style.display = 'none';
+          }
+        });
+
+        if (viewId === 'loading-view') {
+          this.scheduleAuthFallback();
+        } else {
+          this.clearAuthFallback();
+        }
+
+        if (targetView) {
+          const scrollToTop = () => {
+            if (typeof window.scrollTo === 'function') {
+              try {
+                window.scrollTo({ top: 0, behavior: 'auto' });
+              } catch (error) {
+                window.scrollTo(0, 0);
+              }
+            }
+          };
+
+          if (typeof window.requestAnimationFrame === 'function') {
+            window.requestAnimationFrame(scrollToTop);
+          } else {
+            scrollToTop();
+          }
+        }
+      },
+
+      detectViewDisplayMode(view) {
+        if (!view) return 'block';
+        if (view.dataset.originalDisplay) return view.dataset.originalDisplay;
+        if (view.classList.contains('inline-flex')) return 'inline-flex';
+        if (view.classList.contains('flex')) return 'flex';
+        if (view.classList.contains('inline-grid')) return 'inline-grid';
+        if (view.classList.contains('grid')) return 'grid';
+        if (view.classList.contains('inline-block')) return 'inline-block';
+        if (view.classList.contains('inline')) return 'inline';
+        return 'block';
+      },
+
+      scheduleAuthFallback() {
+        this.clearAuthFallback();
+        this.authInitializationTimer = setTimeout(() => {
+          this.authInitializationTimer = null;
+          if (!this.user) {
+            this.showView('login-view');
+          }
+        }, 4000);
+      },
+
+      clearAuthFallback() {
+        if (this.authInitializationTimer) {
+          clearTimeout(this.authInitializationTimer);
+          this.authInitializationTimer = null;
+        }
+      },
+
+      onAuth(user) {
+        this.clearAuthFallback();
+        if (this.obituariesUnsubscribe) {
+          this.obituariesUnsubscribe();
+        }
+        this.user = user;
+
+        if (user) {
+          this.showView('dashboard-view');
+          document.getElementById('user-name').textContent = user.email;
+          this.loadUserObituaries();
+          this.loadFormOptions();
+        } else {
+          this.showView('login-view');
+        }
+      },
+
+      loadUserObituaries() {
+        if (!this.user) return;
+        const obituariesRef = collection(this.db, `users/${this.user.uid}/obituaries`);
+        const q = query(obituariesRef);
+
+        this.obituariesUnsubscribe = onSnapshot(q, (snapshot) => {
+          this.renderObituariesList(snapshot.docs);
+        }, (error) => {
+          console.error("Error loading obituaries:", error);
+          this.notify("Could not load programs. Please check Firestore rules.", "error");
+        });
+      },
+
+      renderObituariesList(docs) {
+        const container = document.getElementById('obituaries-list-container');
+        const noObituariesView = document.getElementById('no-obituaries-view');
+        container.innerHTML = '';
+        if (this.obituariesCache) {
+          this.obituariesCache.clear();
+        }
+
+        if (docs.length === 0) {
+          noObituariesView.style.display = 'block';
+        } else {
+          noObituariesView.style.display = 'none';
+          const grid = document.createElement('div');
+          grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
+          docs.forEach(doc => {
+            const data = doc.data();
+            if (this.obituariesCache) {
+              this.obituariesCache.set(doc.id, data);
+            }
+            const deceasedName = data.frontCover?.fullName || 'Untitled Program';
+            const photoUrl = data.frontCover?.photoUrl;
+            const item = document.createElement('div');
+            item.className = 'bg-gray-50 border rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow flex items-center';
+
+            const photoPlaceholder = `
+                    <div class="flex-shrink-0 h-16 w-16 bg-gray-200 rounded-lg flex items-center justify-center mr-4">
+                        <svg class="h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                  `;
+
+            const photoElement = photoUrl ?
+              `<img src="${photoUrl}" alt="${deceasedName}" class="flex-shrink-0 h-16 w-16 rounded-lg object-cover mr-4">` :
+              photoPlaceholder;
+
+            item.innerHTML = `
+                      ${photoElement}
+                      <div class="flex-grow">
+                        <h3 class="text-lg font-serif font-bold text-gray-800 truncate">${deceasedName}</h3>
+                        <p class="text-sm text-gray-500 mb-2">Last updated: ${data.updatedAt ? new Date(data.updatedAt.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
+                        <div class="flex items-center gap-2">
+                            <button data-id="${doc.id}" class="edit-btn w-full bg-indigo-100 text-indigo-700 font-semibold py-2 px-4 rounded-lg hover:bg-indigo-200 text-sm">Edit</button>
+                            <button data-id="${doc.id}" class="delete-btn w-full bg-red-100 text-red-700 font-semibold py-2 px-4 rounded-lg hover:bg-red-200 text-sm">Delete</button>
+                        </div>
+                      </div>
+                  `;
+            grid.appendChild(item);
+          });
+          container.appendChild(grid);
+
+          container.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', (e) => this.handleEdit(e.currentTarget.dataset.id)));
+          container.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', (e) => this.handleDelete(e.currentTarget)));
+        }
+      },
+
+      bindUI() {
+        this.bindAuthenticationForms();
+        this.bindPhotoUpload();
+        this.bindDashboard();
+        this.bindFormNavigation();
+        this.bindVenueAutocomplete();
+        this.bindVenueTypeOther();
+        this.bindEulogistLogic();
+        this.bindFormattingHandlers();
+        this.setupObituaryGeneration();
+      },
+
+      bindFormattingHandlers() {
+        const handler = () => this.updateAllFormattedDisplays();
+        document.querySelectorAll('input[data-format-target]').forEach(el => {
+          el.addEventListener('input', handler);
+          el.addEventListener('change', handler);
+        });
+
+        // Date preview and age calculation for Life Story Information form
+        this.bindLifeStoryDateHandlers();
+        this.bindConditionalFields();
+        this.bindRepeatableGroups();
+        
+        // Bind Step 1 fields to sync to Step 2
+        this.bindStep1FieldsForSync();
+      },
+
+      bindLifeStoryDateHandlers() {
+        const birthDate = document.getElementById('date-of-birth');
+        const deathDate = document.getElementById('date-of-death');
+        const birthPreview = document.getElementById('birth-date-preview');
+        const deathPreview = document.getElementById('death-date-preview');
+        const ageField = document.getElementById('age-at-passing');
+
+        const updatePreviews = () => {
+          if (birthDate && birthPreview) {
+            birthPreview.textContent = this.formatDate(birthDate.value);
+          }
+          if (deathDate && deathPreview) {
+            deathPreview.textContent = this.formatDate(deathDate.value);
+          }
+
+          // Calculate age when both dates are present
+          if (birthDate && deathDate && ageField && birthDate.value && deathDate.value) {
+            const age = this.calculateAge(birthDate.value, deathDate.value);
+            ageField.value = age !== null ? age.toString() : '';
+          } else if (ageField) {
+            ageField.value = '';
+          }
+        };
+
+        if (birthDate) {
+          birthDate.addEventListener('input', updatePreviews);
+          birthDate.addEventListener('change', updatePreviews);
+        }
+        if (deathDate) {
+          deathDate.addEventListener('input', updatePreviews);
+          deathDate.addEventListener('change', updatePreviews);
+        }
+      },
+      
+      syncStep1ToStep2() {
+        // Define the field mappings from Step 1 to Step 2
+        const syncMappings = {
+          'frontCover.fullName': 'personal.fullLegalName',
+          'frontCover.dob': 'personal.dateOfBirth',
+          'frontCover.dop': 'personal.dateOfDeath'
+        };
+        
+        // Sync each mapped field
+        Object.entries(syncMappings).forEach(([sourceField, targetField]) => {
+          const sourceInput = document.querySelector(`[name="${sourceField}"]`);
+          const targetInput = document.querySelector(`[name="${targetField}"]`);
+          
+          if (sourceInput && targetInput) {
+            targetInput.value = sourceInput.value;
+            
+            // Trigger events for date fields to update previews
+            if (targetInput.type === 'date') {
+              const birthPreview = document.getElementById('birth-date-preview');
+              const deathPreview = document.getElementById('death-date-preview');
+              
+              if (targetField === 'personal.dateOfBirth' && birthPreview) {
+                birthPreview.textContent = this.formatDate(targetInput.value);
+              }
+              if (targetField === 'personal.dateOfDeath' && deathPreview) {
+                deathPreview.textContent = this.formatDate(targetInput.value);
+              }
+            }
+          }
+        });
+        
+        // Also recalculate age in Step 2
+        const birthDateStep2 = document.querySelector('input[name="personal.dateOfBirth"]');
+        const deathDateStep2 = document.querySelector('input[name="personal.dateOfDeath"]');
+        const ageField = document.getElementById('age-at-passing');
+        
+        if (birthDateStep2 && deathDateStep2 && ageField && birthDateStep2.value && deathDateStep2.value) {
+          const age = this.calculateAge(birthDateStep2.value, deathDateStep2.value);
+          ageField.value = age !== null ? age.toString() : '';
+        }
+      },
+      
+      bindStep1FieldsForSync() {
+        // Bind Step 1 fields to sync to Step 2 when they change
+        const fullNameStep1 = document.querySelector('input[name="frontCover.fullName"]');
+        const dobStep1 = document.querySelector('input[name="frontCover.dob"]');
+        const dopStep1 = document.querySelector('input[name="frontCover.dop"]');
+        
+        [fullNameStep1, dobStep1, dopStep1].forEach(field => {
+          if (field) {
+            field.addEventListener('input', () => this.syncStep1ToStep2());
+            field.addEventListener('change', () => this.syncStep1ToStep2());
+          }
+        });
+      },
+
+      bindConditionalFields() {
+        // Marriage Status Toggle
+        const marriageYes = document.getElementById('marriage-yes');
+        const marriageNo = document.getElementById('marriage-no');
+        const marriageDetailsContainer = document.getElementById('marriage-details-container');
+        
+        if (marriageYes && marriageNo && marriageDetailsContainer) {
+          marriageYes.addEventListener('change', (e) => {
+            if (e.target.checked) {
+              marriageDetailsContainer.classList.remove('hidden');
+            }
+          });
+          marriageNo.addEventListener('change', (e) => {
+            if (e.target.checked) {
+              marriageDetailsContainer.classList.add('hidden');
+            }
+          });
+        }
+
+        // Spouse Deceased Toggle
+        const spouseDeceasedCheckbox = document.getElementById('spouse-deceased');
+        const spouseDeathDetails = document.getElementById('spouse-death-details');
+        
+        if (spouseDeceasedCheckbox && spouseDeathDetails) {
+          spouseDeceasedCheckbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+              spouseDeathDetails.classList.remove('hidden');
+            } else {
+              spouseDeathDetails.classList.add('hidden');
+            }
+          });
+        }
+
+        // Custom Pronouns
+        const pronounsSelect = document.getElementById('pronouns');
+        const customContainer = document.getElementById('custom-pronouns-container');
+        if (pronounsSelect && customContainer) {
+          pronounsSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'Custom') {
+              customContainer.classList.remove('hidden');
+            } else {
+              customContainer.classList.add('hidden');
+            }
+          });
+        }
+
+        // Religious Affiliation Other
+        const religiousSelect = document.getElementById('religious-affiliation');
+        const religiousOtherContainer = document.getElementById('religious-other-container');
+        if (religiousSelect && religiousOtherContainer) {
+          religiousSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'Other') {
+              religiousOtherContainer.classList.remove('hidden');
+            } else {
+              religiousOtherContainer.classList.add('hidden');
+            }
+          });
+        }
+
+        // Military Service
+        const militaryRadios = document.querySelectorAll('input[name="career.militaryService"]');
+        const militaryDetails = document.getElementById('military-details');
+        if (militaryDetails) {
+          militaryRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+              if (e.target.value === 'Yes') {
+                militaryDetails.classList.remove('hidden');
+              } else {
+                militaryDetails.classList.add('hidden');
+              }
+            });
+          });
+        }
+
+        // Hobbies Other
+        const hobbiesOtherCheckbox = document.getElementById('hobbies-other-checkbox');
+        const hobbiesOtherContainer = document.getElementById('hobbies-other-container');
+        if (hobbiesOtherCheckbox && hobbiesOtherContainer) {
+          hobbiesOtherCheckbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+              hobbiesOtherContainer.classList.remove('hidden');
+            } else {
+              hobbiesOtherContainer.classList.add('hidden');
+            }
+          });
+        }
+
+        // Personality Other
+        const personalityOtherCheckbox = document.getElementById('personality-other-checkbox');
+        const personalityOtherContainer = document.getElementById('personality-other-container');
+        if (personalityOtherCheckbox && personalityOtherContainer) {
+          personalityOtherCheckbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+              personalityOtherContainer.classList.remove('hidden');
+            } else {
+              personalityOtherContainer.classList.add('hidden');
+            }
+          });
+        }
+      },
+
+      bindRepeatableGroups() {
+        // Church Memberships
+        this.setupRepeatableGroup('church-memberships', 'church', (index) =>
+          `<div class="church-entry p-3 border rounded-lg bg-gray-50"> <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3"> <input type="text" name="faith.churchMemberships.${index}.churchName" class="p-2 border rounded-lg" placeholder="Church Name" /> <input type="text" name="faith.churchMemberships.${index}.location" class="p-2 border rounded-lg" placeholder="Location (City, State)" /> <input type="text" name="faith.churchMemberships.${index}.timeframe" class="p-2 border rounded-lg" placeholder="Years/Timeframe" /> </div> <div class="mb-3"> <label class="block text-sm font-medium text-gray-600 mb-1">Ministry Roles / Service at this Church</label> <textarea name="faith.churchMemberships.${index}.ministryRoles" rows="2" class="w-full p-2 border rounded-lg" placeholder="Describe ministry roles and service"></textarea> </div> <div class="mb-3"> <label class="block text-sm font-medium text-gray-600 mb-2">Baptized here?</label> <div class="flex gap-4"> <label class="flex items-center"> <input type="radio" name="faith.churchMemberships.${index}.baptized" value="Yes" class="mr-2" /> <span class="text-sm">Yes</span> </label> <label class="flex items-center"> <input type="radio" name="faith.churchMemberships.${index}.baptized" value="No" class="mr-2" /> <span class="text-sm">No</span> </label> </div> </div><small class="field-instructions">Select Yes or No. If Yes, provide baptism details or salvation story.</small> <div class="mb-3"> <label class="block text-sm font-medium text-gray-600 mb-2">Got saved here?</label> <div class="flex gap-4"> <label class="flex items-center"> <input type="radio" name="faith.churchMemberships.${index}.salvation" value="Yes" class="mr-2" /> <span class="text-sm">Yes</span> </label> <label class="flex items-center"> <input type="radio" name="faith.churchMemberships.${index}.salvation" value="No" class="mr-2" /> <span class="text-sm">No</span> </label> </div> </div> <div class="mb-3"> <label class="block text-sm font-medium text-gray-600 mb-1">Notes / Memories about this Church</label> <textarea name="faith.churchMemberships.${index}.notes" rows="2" class="w-full p-2 border rounded-lg" placeholder="Optional notes and memories"></textarea> </div> <button type="button" class="remove-church px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove Membership</button> </div>`);
+
+        // Colleges (updated)
+        this.setupRepeatableGroup('colleges', 'college', (index) =>
+          `<div class="college-entry p-3 border rounded-lg bg-gray-50"> <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3"> <input type="text" name="education.colleges.${index}.schoolName" class="p-2 border rounded-lg" placeholder="School Name" /> <input type="text" name="education.colleges.${index}.graduationYear" class="p-2 border rounded-lg" pattern="^\\d{4}$" placeholder="Graduation Year (YYYY)" /> </div> <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3"> <input type="text" name="education.colleges.${index}.city" class="p-2 border rounded-lg" placeholder="City" /> <input type="text" name="education.colleges.${index}.state" class="p-2 border rounded-lg" placeholder="State" /> <input type="text" name="education.colleges.${index}.degree" class="p-2 border rounded-lg" placeholder="Degree / Studies Completed" /> </div> <div class="mb-3"> <label class="block text-sm font-medium text-gray-600 mb-1">Activities / Organizations at this School</label> <textarea name="education.colleges.${index}.activities" rows="2" class="w-full p-2 border rounded-lg" placeholder="Clubs, teams, organizations, leadership, etc."></textarea> </div> <button type="button" class="remove-college px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove College/University</button> </div>`);
+
+        // Employers
+        this.setupRepeatableGroup('employers', 'employer', (index) =>
+          `<div class="employer-entry p-3 border rounded-lg bg-gray-50">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+              <input type="text" name="career.employers.${index}.companyName" class="p-2 border rounded-lg" placeholder="Company Name" />
+              <input type="text" name="career.employers.${index}.location" class="p-2 border rounded-lg" placeholder="Location" />
+              <input type="text" name="career.employers.${index}.role" class="p-2 border rounded-lg" placeholder="Role" />
+            </div>
+            <button type="button" class="remove-employer px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove Employer</button>
+          </div>`);
+
+        // Preceded in Death
+        this.setupRepeatableGroup('preceded', 'preceded', (index) =>
+          `<div class="preceded-entry p-3 border rounded-lg bg-gray-50">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+              <input type="text" name="preceded.${index}.name" class="p-2 border rounded-lg" placeholder="Name" />
+              <input type="text" name="preceded.${index}.relationship" class="p-2 border rounded-lg" placeholder="Relationship" />
+              <input type="text" name="preceded.${index}.location" class="p-2 border rounded-lg" placeholder="City/State (optional)" />
+            </div>
+            <button type="button" class="remove-preceded px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove Person</button>
+          </div>`);
+
+        // Parents (updated)
+        this.setupRepeatableGroup('parents', 'parent', (index) =>
+          `<div class="parent-entry p-3 border rounded-lg bg-gray-50">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+              <select name="surviving.parents.${index}.relationship" class="p-2 border rounded-lg bg-white">
+                <option value="">Relationship</option>
+                <option value="Mother">Mother</option>
+                <option value="Father">Father</option>
+              </select>
+              <input type="text" name="surviving.parents.${index}.name" class="p-2 border rounded-lg" placeholder="Name" />
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+              <input type="text" name="surviving.parents.${index}.location" class="p-2 border rounded-lg" placeholder="Location" />
+              <input type="text" name="surviving.parents.${index}.spouse" class="p-2 border rounded-lg" placeholder="Spouse (optional)" />
+            </div>
+            <div class="mb-2">
+              <label class="flex items-center">
+                <input type="checkbox" name="surviving.parents.${index}.deceased" class="mr-2" />
+                <span class="text-sm">Deceased</span>
+              </label>
+            </div>
+            <button type="button" class="remove-parent px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove</button>
+          </div>`);
+
+        // Siblings
+        this.setupRepeatableGroup('siblings', 'sibling', (index) =>
+          `<div class="sibling-entry p-3 border rounded-lg bg-gray-50">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+              <input type="text" name="surviving.siblings.${index}.name" class="p-2 border rounded-lg" placeholder="Name" />
+              <select name="surviving.siblings.${index}.relationshipType" class="p-2 border rounded-lg bg-white">
+                <option value="">Relationship Type</option>
+                <option value="Brother">Brother</option>
+                <option value="Sister">Sister</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+              <input type="text" name="surviving.siblings.${index}.location" class="p-2 border rounded-lg" placeholder="Location" />
+              <input type="text" name="surviving.siblings.${index}.spouse" class="p-2 border rounded-lg" placeholder="Spouse (optional)" />
+            </div>
+            <button type="button" class="remove-sibling px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove</button>
+          </div>`);
+
+        // Grandparents (updated)
+        this.setupRepeatableGroup('grandparents', 'grandparent', (index) =>
+          `<div class="grandparent-entry p-3 border rounded-lg bg-gray-50">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+              <input type="text" name="surviving.grandparents.${index}.name" class="p-2 border rounded-lg" placeholder="Name" />
+              <input type="text" name="surviving.grandparents.${index}.location" class="p-2 border rounded-lg" placeholder="Location" />
+              <input type="text" name="surviving.grandparents.${index}.spouse" class="p-2 border rounded-lg" placeholder="Spouse (optional)" />
+            </div>
+            <div class="mb-2">
+              <label class="block text-sm font-medium text-gray-600 mb-1">Status</label>
+              <div class="flex gap-4">
+                <label class="flex items-center">
+                  <input type="radio" name="surviving.grandparents.${index}.status" value="Living" class="mr-2" />
+                  <span class="text-sm">Living</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="radio" name="surviving.grandparents.${index}.status" value="Deceased" class="mr-2" />
+                  <span class="text-sm">Deceased</span>
+                </label>
+              </div>
+            </div>
+            <button type="button" class="remove-grandparent px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove</button>
+          </div>`);
+
+        // Children (updated)
+        this.setupRepeatableGroup('children', 'child', (index) =>
+          `<div class="child-entry p-3 border rounded-lg bg-gray-50">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+              <input type="text" name="surviving.children.${index}.name" class="p-2 border rounded-lg" placeholder="Name" />
+              <select name="surviving.children.${index}.relationshipType" class="p-2 border rounded-lg bg-white">
+                <option value="">Relationship Type</option>
+                <option value="Son">Son</option>
+                <option value="Daughter">Daughter</option>
+                <option value="Stepchild">Stepchild</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+              <input type="text" name="surviving.children.${index}.location" class="p-2 border rounded-lg" placeholder="Location" />
+              <input type="text" name="surviving.children.${index}.spouse" class="p-2 border rounded-lg" placeholder="Spouse (optional)" />
+            </div>
+            <button type="button" class="remove-child px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove</button>
+          </div>`);
+
+        // Godparents
+        this.setupRepeatableGroup('godparents', 'godparent', (index) =>
+          `<div class="godparent-entry flex gap-2 items-center">
+            <input type="text" name="surviving.godparents.${index}.name" class="flex-1 p-2 border rounded-lg" placeholder="Name" />
+            <input type="text" name="surviving.godparents.${index}.description" class="flex-1 p-2 border rounded-lg" placeholder="Optional description" />
+            <button type="button" class="remove-godparent px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove</button>
+          </div>`);
+
+        // Extended Family
+        this.setupRepeatableGroup('extended', 'extended', (index) =>
+          `<div class="extended-entry p-3 border rounded-lg bg-gray-50">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+              <input type="text" name="surviving.extended.${index}.name" class="p-2 border rounded-lg" placeholder="Name" />
+              <select name="surviving.extended.${index}.relationship" class="p-2 border rounded-lg bg-white">
+                <option value="">Relationship</option>
+                <option value="Uncle">Uncle</option>
+                <option value="Aunt">Aunt</option>
+                <option value="Cousin">Cousin</option>
+              </select>
+              <input type="text" name="surviving.extended.${index}.location" class="p-2 border rounded-lg" placeholder="Location" />
+            </div>
+            <button type="button" class="remove-extended px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove</button>
+          </div>`);
+
+        // Special Friends
+        this.setupRepeatableGroup('friends', 'friend', (index) =>
+          `<div class="friend-entry p-3 border rounded-lg bg-gray-50">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+              <input type="text" name="friends.special.${index}.name" class="p-2 border rounded-lg" placeholder="Name" />
+              <input type="text" name="friends.special.${index}.description" class="p-2 border rounded-lg" placeholder="Description" />
+            </div>
+            <button type="button" class="remove-friend px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove</button>
+          </div>`);
+      },
+
+      setupRepeatableGroup(groupName, itemName, templateFn) {
+        const addBtn = document.getElementById(`add-${itemName}`);
+        const container = document.getElementById(`${groupName}-container`);
+
+        if (!addBtn || !container) return;
+
+        let counter = container.querySelectorAll(`.${itemName}-entry`).length;
+
+        // Add button handler
+        addBtn.addEventListener('click', () => {
+          const newEntry = document.createElement('div');
+          newEntry.innerHTML = templateFn(counter);
+          const entryElement = newEntry.firstElementChild;
+
+          // Add remove handler
+          const removeBtn = entryElement.querySelector(`.remove-${itemName}`);
+          if (removeBtn) {
+            removeBtn.addEventListener('click', () => {
+              entryElement.remove();
+            });
+          }
+
+          container.appendChild(entryElement);
+          counter++;
+        });
+
+        // Existing remove button handlers
+        container.querySelectorAll(`.remove-${itemName}`).forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const entry = e.target.closest(`.${itemName}-entry`);
+            if (entry) entry.remove();
+          });
+        });
+      },
+
+      bindEulogistLogic() {
+        const eulogistRadios = document.querySelectorAll('input[name="eulogistSame"]');
+        const eulogistContainer = document.getElementById('eulogist-input-container');
+        const eulogistInput = document.getElementById('eulogist');
+        const eulogistLabel = eulogistContainer.querySelector('label');
+
+        const updateEulogistRequirement = (isEulogistDifferent) => {
+          if (isEulogistDifferent) {
+            eulogistContainer.classList.remove('hidden');
+            eulogistInput.required = true;
+            if (!eulogistLabel.querySelector('.text-red-500')) {
+              eulogistLabel.insertAdjacentHTML('beforeend', ' <span class="text-red-500">*</span>');
+            }
+          } else {
+            eulogistContainer.classList.add('hidden');
+            eulogistInput.required = false;
+            eulogistInput.value = '';
+            eulogistInput.classList.remove('error-border');
+            const asterisk = eulogistLabel.querySelector('.text-red-500');
+            if (asterisk) {
+              asterisk.remove();
+            }
+          }
+        };
+
+        eulogistRadios.forEach(radio => {
+          radio.addEventListener('change', (e) => {
+            updateEulogistRequirement(e.target.value === 'no');
+          });
+        });
+      },
+
+      bindVenueTypeOther() {
+        const venueTypeSelect = document.querySelector('select[name="frontCover.venue.type"]');
+        const otherContainer = document.getElementById('other-venue-type-container');
+        const otherInput = document.querySelector('input[name="frontCover.venue.otherType"]');
+
+        venueTypeSelect.addEventListener('change', (e) => {
+          if (e.target.value === 'Other') {
+            otherContainer.classList.remove('hidden');
+            otherInput.required = true;
+          } else {
+            otherContainer.classList.add('hidden');
+            otherInput.required = false;
+            otherInput.value = '';
+          }
+        });
+      },
+
+      bindVenueAutocomplete() {
+        const venueNameInput = document.querySelector('input[name="frontCover.venue.name"]');
+        const suggestionsContainer = document.getElementById('venue-suggestions');
+
+        venueNameInput.addEventListener('input', () => {
+          clearTimeout(this.venueSearchTimeout);
+          const queryText = venueNameInput.value.trim();
+          if (queryText.length < 3) {
+            suggestionsContainer.innerHTML = '';
+            suggestionsContainer.classList.add('hidden');
+            return;
+          }
+          this.venueSearchTimeout = setTimeout(async () => {
+            const venuesRef = collection(this.db, "venues");
+            const q = query(venuesRef, where("name", ">=", queryText), where("name", "<=", queryText + '\uf8ff'));
+            const querySnapshot = await getDocs(q);
+
+            suggestionsContainer.innerHTML = '';
+            if (querySnapshot.empty) {
+              suggestionsContainer.classList.add('hidden');
+            } else {
+              suggestionsContainer.classList.remove('hidden');
+              querySnapshot.forEach(doc => {
+                const venue = doc.data();
+                const suggestionEl = document.createElement('div');
+                suggestionEl.textContent = `${venue.name} - ${venue.city}, ${venue.state}`;
+                suggestionEl.addEventListener('click', () => {
+                  this.populateVenue(venue);
+                  suggestionsContainer.classList.add('hidden');
+                });
+                suggestionsContainer.appendChild(suggestionEl);
+              });
+            }
+          }, 300);
+        });
+      },
+
+      populateVenue(venue) {
+        document.querySelector('input[name="frontCover.venue.name"]').value = venue.name || '';
+        document.querySelector('input[name="frontCover.venue.street"]').value = venue.street || '';
+        document.querySelector('input[name="frontCover.venue.city"]').value = venue.city || '';
+        document.querySelector('input[name="frontCover.venue.state"]').value = venue.state || '';
+        document.querySelector('input[name="frontCover.venue.zip"]').value = venue.zip || '';
+
+        const venueTypeSelect = document.querySelector('select[name="frontCover.venue.type"]');
+        const otherContainer = document.getElementById('other-venue-type-container');
+        const otherInput = document.querySelector('input[name="frontCover.venue.otherType"]');
+
+        const options = Array.from(venueTypeSelect.options).map(o => o.value);
+        if (venue.type && options.includes(venue.type)) {
+          venueTypeSelect.value = venue.type;
+          otherContainer.classList.add('hidden');
+          otherInput.required = false;
+          otherInput.value = '';
+        } else if (venue.type) {
+          venueTypeSelect.value = 'Other';
+          otherContainer.classList.remove('hidden');
+          otherInput.required = true;
+          otherInput.value = venue.type;
+        } else {
+          venueTypeSelect.value = '';
+          otherContainer.classList.add('hidden');
+          otherInput.required = false;
+          otherInput.value = '';
+        }
+      },
+
+      bindAuthenticationForms() {
+        document.getElementById('login-form')?.addEventListener('submit', (e) => { e.preventDefault(); this.handleLogin(); });
+        document.getElementById('signup-form')?.addEventListener('submit', (e) => { e.preventDefault(); this.handleSignup(); });
+        document.getElementById('show-signup')?.addEventListener('click', (e) => { e.preventDefault(); this.showView('signup-view'); });
+        document.getElementById('show-login')?.addEventListener('click', (e) => { e.preventDefault(); this.showView('login-view'); });
+        document.getElementById('logout-button')?.addEventListener('click', () => this.handleLogout());
+      },
+
+      async handleLogin() {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const errorDiv = document.getElementById('login-error');
+        try {
+          this.showView('loading-view');
+          await signInWithEmailAndPassword(this.auth, email, password);
+        } catch (error) {
+          this.showView('login-view');
+          this.showError(errorDiv, this.getErrorMessage(error.code));
+        }
+      },
+
+      async handleSignup() {
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+        const firstName = document.getElementById('signup-firstname').value;
+        const lastName = document.getElementById('signup-lastname').value;
+        const errorDiv = document.getElementById('signup-error');
+        const termsCheckbox = document.getElementById('signup-terms');
+
+        if (!termsCheckbox.checked) {
+          this.showError(errorDiv, "You must agree to the Terms of Service to create an account.");
+          return;
+        }
+
+        try {
+          this.showView('loading-view');
+          const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
+          await setDoc(doc(this.db, 'users', userCredential.user.uid), {
+            firstName, lastName, email,
+            street: document.getElementById('signup-street').value,
+            city: document.getElementById('signup-city').value,
+            state: document.getElementById('signup-state').value,
+            zip: document.getElementById('signup-zip').value,
+            phone: document.getElementById('signup-phone').value,
+            createdAt: serverTimestamp()
+          });
+        } catch (error) {
+          this.showView('signup-view');
+          this.showError(errorDiv, this.getErrorMessage(error.code));
+        }
+      },
+
+      async handleLogout() {
+        try {
+          await signOut(this.auth);
+        } catch (error) {
+          this.notify('Error logging out.', 'error');
+        }
+      },
+
+      bindDashboard() {
+        document.getElementById('create-new-button')?.addEventListener('click', () => this.handleCreateNew());
+        document.getElementById('form-back-to-dashboard')?.addEventListener('click', () => {
+          this.showView('dashboard-view');
+        });
+      },
+
+      resetFormState() {
+        const form = document.getElementById('obituary-form');
+        if (form) {
+          form.reset();
+        }
+      },
+
+      handleCreateNew() {
+        this.currentObituaryId = null;
+        this.currentStep = 1;
+        this.resetFormState();
+        this.removePhoto();
+        const otherVenueContainer = document.getElementById('other-venue-type-container');
+        if (otherVenueContainer) {
+          otherVenueContainer.classList.add('hidden');
+        }
+        const otherVenueInput = document.querySelector('input[name="frontCover.venue.otherType"]');
+        if (otherVenueInput) {
+          otherVenueInput.required = false;
+          otherVenueInput.value = '';
+        }
+        this.updateAllFormattedDisplays();
+        this.updateProgressUI();
+        document.querySelectorAll('.form-step').forEach(step => step.classList.remove('active'));
+        const firstStep = document.getElementById('step-1');
+        if (firstStep) {
+          firstStep.classList.add('active');
+        }
+        this.showView('form-view');
+      },
+
+      async handleEdit(id) {
+        if (!this.user) {
+          this.notify('Please sign in again to edit this program.', 'error');
+          this.showView('login-view');
+          return;
+        }
+        const form = document.getElementById('obituary-form');
+        if (!form) {
+          console.error('Obituary form element is missing.');
+          this.notify('Program form is unavailable. Please refresh the page and try again.', 'error');
+          return;
+        }
+
+        const loadProgramIntoForm = (programData) => {
+          this.currentObituaryId = id;
+          this.currentStep = 1;
+          this.resetFormState();
+          try {
+            this.populateForm(programData);
+          } catch (populationError) {
+            console.error('Error populating form data:', populationError);
+          }
+          this.updateAllFormattedDisplays();
+          this.updateProgressUI();
+          document.querySelectorAll('.form-step').forEach(step => step.classList.remove('active'));
+          const firstStep = document.getElementById('step-1');
+          if (firstStep) {
+            firstStep.classList.add('active');
+          }
+          this.showView('form-view');
+        };
+
+        const tryLoadCachedProgram = () => {
+          if (!this.obituariesCache) return false;
+          const cached = this.obituariesCache.get(id);
+          if (!cached) return false;
+          loadProgramIntoForm(cached);
+          return true;
+        };
+
+        try {
+          this.showView('loading-view');
+          const docRef = doc(this.db, 'users', this.user.uid, 'obituaries', id);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const programData = docSnap.data();
+            if (this.obituariesCache) {
+              this.obituariesCache.set(id, programData);
+            }
+            loadProgramIntoForm(programData);
+          } else if (!tryLoadCachedProgram()) {
+            this.notify("Program not found.", "error");
+            this.showView('dashboard-view');
+          }
+        } catch (error) {
+          console.error("Error loading for edit:", error);
+          if (!tryLoadCachedProgram()) {
+            this.notify("Could not load program for editing.", "error");
+            this.showView('dashboard-view');
+          }
+        }
+      },
+
+      async handleDelete(deleteButton) {
+        const id = deleteButton.dataset.id;
+        if (deleteButton.dataset.confirming) {
+          try {
+            await deleteDoc(doc(this.db, 'users', this.user.uid, 'obituaries', id));
+            this.notify("Program deleted successfully.", "success");
+          } catch (error) {
+            console.error("Error deleting program: ", error);
+            this.notify("Could not delete program.", "error");
+          }
+        } else {
+          deleteButton.textContent = 'Confirm Delete?';
+          deleteButton.classList.remove('bg-red-100', 'text-red-700');
+          deleteButton.classList.add('bg-red-600', 'text-white');
+          deleteButton.dataset.confirming = 'true';
+
+          setTimeout(() => {
+            if (deleteButton.dataset.confirming) {
+              deleteButton.textContent = 'Delete';
+              deleteButton.classList.add('bg-red-100', 'text-red-700');
+              deleteButton.classList.remove('bg-red-600', 'text-white');
+              delete deleteButton.dataset.confirming;
+            }
+          }, 3000);
+        }
+      },
+
+      bindFormNavigation() {
+        document.querySelectorAll('.next-button').forEach(btn => btn.addEventListener('click', () => this.goToNextStep()));
+        document.querySelectorAll('.prev-button').forEach(btn => btn.addEventListener('click', () => this.goToPrevStep()));
+        document.querySelectorAll('.save-progress-button').forEach(btn => btn.addEventListener('click', () => this.saveProgress()));
+      },
+
+      goToNextStep() {
+        if (!this.validateStep(this.currentStep)) {
+          this.notify('Please fill out all required fields.', 'error');
+          return;
+        }
+        if (this.currentStep < this.totalSteps) {
+          document.getElementById(`step-${this.currentStep}`).classList.remove('active');
+          this.currentStep++;
+          document.getElementById(`step-${this.currentStep}`).classList.add('active');
+          this.updateProgressUI();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          
+          // Sync Step 1 data to Step 2 when entering Step 2
+          if (this.currentStep === 2) {
+            this.syncStep1ToStep2();
+          }
+        }
+      },
+
+      goToPrevStep() {
+        if (this.currentStep > 1) {
+          document.getElementById(`step-${this.currentStep}`).classList.remove('active');
+          this.currentStep--;
+          document.getElementById(`step-${this.currentStep}`).classList.add('active');
+          this.updateProgressUI();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      },
+
+      validateStep(stepNumber) {
+        let isValid = true;
+        const stepContainer = document.getElementById(`step-${stepNumber}`);
+        stepContainer.querySelectorAll('[required]').forEach(input => {
+          input.classList.remove('error-border');
+          if (!input.value.trim()) {
+            isValid = false;
+            input.classList.add('error-border');
+          }
+        });
+        return isValid;
+      },
+
+      updateProgressUI() {
+        const progress = this.totalSteps > 1 ? (this.currentStep - 1) / (this.totalSteps - 1) * 100 : 0;
+        document.getElementById('progress-bar').style.width = `${progress}%`;
+        document.getElementById('step-counter').textContent = `Step ${this.currentStep} of ${this.totalSteps}`;
+      },
+
+      getFormData() {
+        const form = document.getElementById('obituary-form');
+        const formData = new FormData(form);
+        const data = {};
+        for (let [key, value] of formData.entries()) {
+          if (key === 'photo-upload') continue;
+          const keys = key.split('.');
+          keys.reduce((acc, currentKey, index) => {
+            if (index === keys.length - 1) {
+              acc[currentKey] = value;
+            } else {
+              acc[currentKey] = acc[currentKey] || {};
+            }
+            return acc[currentKey];
+          }, data);
+        }
+
+        if (data.frontCover && data.frontCover.venue) {
+          const venue = data.frontCover.venue;
+          if (venue.type === 'Other' && venue.otherType) {
+            venue.type = venue.otherType;
+          }
+          delete venue.otherType;
+        }
+
+        return data;
+      },
+
+      populateForm(data) {
+        const form = document.getElementById('obituary-form');
+        const traverseAndSet = (obj, path = '') => {
+          for (const key in obj) {
+            const newPath = path ? `${path}.${key}` : key;
+            if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+              traverseAndSet(obj[key], newPath);
+            } else {
+              const input = form.querySelector(`[name="${newPath}"]`);
+              if (input) {
+                if (input.type === 'radio') {
+                  const radioToSelect = form.querySelector(`[name="${newPath}"][value="${obj[key]}"]`);
+                  if (radioToSelect) radioToSelect.checked = true;
+                } else if (input.type === 'checkbox') {
+                  input.checked = Boolean(obj[key]);
+                } else {
+                  input.value = obj[key];
+                }
+              }
+            }
+          }
+        };
+        traverseAndSet(data);
+
+        if (data.frontCover && data.frontCover.venue) {
+          this.populateVenue(data.frontCover.venue);
+        }
+
+        const eulogistRadio = document.querySelector('input[name="eulogistSame"]:checked');
+        if (eulogistRadio) {
+          eulogistRadio.dispatchEvent(new Event('change'));
+        }
+
+        const photoUrl = data.frontCover?.photoUrl;
+        if (photoUrl) {
+          document.getElementById('photo-upload-area').style.backgroundImage = `url("${photoUrl}")`;
+          document.getElementById('photo-placeholder').classList.add('hidden');
+          document.getElementById('photo-preview-overlay').classList.remove('hidden');
+        } else {
+          this.removePhoto();
+        }
+      },
+
+      async saveProgress() {
+        if (!this.user) return this.notify("You must be logged in to save.", "error");
+
+        const formData = this.getFormData();
+        formData.updatedAt = serverTimestamp();
+
+        const venueData = formData.frontCover.venue;
+        if (venueData && venueData.name && venueData.street) {
+          const venuesRef = collection(this.db, "venues");
+          const q = query(venuesRef, where("name", "==", venueData.name), where("street", "==", venueData.street));
+          const querySnapshot = await getDocs(q);
+          if (querySnapshot.empty) {
+            await addDoc(venuesRef, venueData);
+          }
+        }
+
+        try {
+          if (this.currentObituaryId) {
+            const docRef = doc(this.db, 'users', this.user.uid, 'obituaries', this.currentObituaryId);
+            await updateDoc(docRef, formData);
+            this.notify("Progress saved successfully!", "success");
+          } else {
+            formData.createdAt = serverTimestamp();
+            const collectionRef = collection(this.db, 'users', this.user.uid, 'obituaries');
+            const docRef = await addDoc(collectionRef, formData);
+            this.currentObituaryId = docRef.id;
+            this.notify("Program created and saved!", "success");
+          }
+        } catch (error) {
+          console.error("Error saving progress:", error);
+          this.notify("Could not save progress.", "error");
+        }
+      },
+
+      bindPhotoUpload() {
+        const photoInput = document.getElementById('photo-upload-input');
+        const photoUploadArea = document.getElementById('photo-upload-area');
+
+        photoInput?.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files[0]) this.handlePhotoUpload(e.target.files[0]);
+        });
+
+        photoUploadArea?.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          photoUploadArea.classList.add('border-indigo-600');
+        });
+
+        photoUploadArea?.addEventListener('dragleave', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          photoUploadArea.classList.remove('border-indigo-600');
+        });
+
+        photoUploadArea?.addEventListener('drop', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          photoUploadArea.classList.remove('border-indigo-600');
+          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            this.handlePhotoUpload(e.dataTransfer.files[0]);
+          }
+        });
+
+        document.getElementById('change-photo-btn')?.addEventListener('click', () => photoInput?.click());
+        document.getElementById('remove-photo-btn')?.addEventListener('click', () => this.removePhoto());
+      },
+
+      async handlePhotoUpload(file) {
+        if (!this.user) return this.notify('You must be logged in to upload photos.', 'error');
+        if (!file.type.startsWith('image/')) return this.notify('Please select an image file.', 'error');
+        if (file.size > 10 * 1024 * 1024) return this.notify('Image must be smaller than 10MB.', 'error');
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById('photo-upload-area').style.backgroundImage = `url(${e.target.result})`;
+          document.getElementById('photo-placeholder').classList.add('hidden');
+          document.getElementById('photo-preview-overlay').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+
+        const uniqueId = this.currentObituaryId || `temp_${Date.now()}`;
+        const filePath = `users/${this.user.uid}/obituaries/${uniqueId}/${file.name}`;
+        const storageRef = ref(this.storage, filePath);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        const progressContainer = document.getElementById('photo-upload-progress');
+        progressContainer.classList.remove('hidden');
+
+        uploadTask.on('state_changed',
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            document.getElementById('photo-progress-bar').style.width = progress + '%';
+            document.getElementById('upload-percentage').textContent = Math.round(progress) + '%';
+          },
+          (error) => {
+            console.error("Upload failed:", error);
+            this.notify('Photo upload failed.', 'error');
+            progressContainer.classList.add('hidden');
+          },
+          async () => {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            document.getElementById('photo-url-input').value = downloadURL;
+            this.notify('Photo uploaded successfully!', 'success');
+            setTimeout(() => progressContainer.classList.add('hidden'), 2000);
+          }
+        );
+      },
+
+      removePhoto() {
+        const uploadArea = document.getElementById('photo-upload-area');
+        if (uploadArea) uploadArea.style.backgroundImage = 'none';
+        const placeholder = document.getElementById('photo-placeholder');
+        if (placeholder) placeholder.classList.remove('hidden');
+        const overlay = document.getElementById('photo-preview-overlay');
+        if (overlay) overlay.classList.add('hidden');
+        const fileInput = document.getElementById('photo-upload-input');
+        if (fileInput) fileInput.value = '';
+        const urlInput = document.getElementById('photo-url-input');
+        if (urlInput) urlInput.value = '';
+      },
+
+      initPhotoEditor() {
+        const modal = document.getElementById('photo-editor-modal');
+        const editBtn = document.getElementById('edit-photo-btn');
+        const closeBtn = document.getElementById('close-editor');
+        const cancelBtn = document.getElementById('cancel-edit');
+        const applyBtn = document.getElementById('apply-edit');
+
+        editBtn?.addEventListener('click', () => {
+          const bgImage = document.getElementById('photo-upload-area').style.backgroundImage;
+          if (bgImage && bgImage !== 'none') {
+            const imageUrl = bgImage.slice(5, -2);
+            this.openPhotoEditor(imageUrl);
+          }
+        });
+
+        const closeEditor = () => {
+          modal.classList.add('hidden');
+          if (this.photoEditor) { this.photoEditor.destroy(); this.photoEditor = null; }
+        };
+
+        closeBtn?.addEventListener('click', closeEditor);
+        cancelBtn?.addEventListener('click', closeEditor);
+        applyBtn?.addEventListener('click', () => this.applyPhotoEdits());
+
+        document.querySelectorAll('.editor-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            if (!this.photoEditor) return;
+            const { method, option } = e.currentTarget.dataset;
+            if (method === 'crop' || method === 'move') {
+              document.querySelectorAll('.editor-btn').forEach(b => b.classList.remove('active'));
+              e.currentTarget.classList.add('active');
+              this.photoEditor.setDragMode(method);
+            } else {
+              this.photoEditor[method](option ? parseFloat(option) : undefined);
+            }
+          });
+        });
+      },
+
+      openPhotoEditor(imageUrl) {
+        const modal = document.getElementById('photo-editor-modal');
+        const editorImage = document.getElementById('editor-image');
+        editorImage.src = imageUrl;
+        modal.classList.remove('hidden');
+        editorImage.onload = () => {
+          if (this.photoEditor) this.photoEditor.destroy();
+          this.photoEditor = new Cropper(editorImage, { aspectRatio: 1, viewMode: 1, dragMode: 'crop' });
+        };
+      },
+
+      applyPhotoEdits() {
+        if (!this.photoEditor) return;
+        this.photoEditor.getCroppedCanvas({ width: 500, height: 500 }).toBlob((blob) => {
+          if (blob) {
+            const editedFile = new File([blob], 'edited-photo.jpg', { type: 'image/jpeg' });
+            this.handlePhotoUpload(editedFile);
+            document.getElementById('photo-editor-modal').classList.add('hidden');
+          }
+        }, 'image/jpeg');
+      },
+
+      updateAllFormattedDisplays() {
+        const dateFormatChoice = document.querySelector('input[name="programSettings.dateFormat"]:checked');
+        const timeFormatChoice = document.querySelector('input[name="programSettings.timeFormat"]:checked');
+        const dateFormat = dateFormatChoice ? dateFormatChoice.value : 'written';
+        const timeFormat = timeFormatChoice ? timeFormatChoice.value : 'written';
+
+        const dateTargets = ['dob', 'dop', 'funeralDate'];
+        dateTargets.forEach(id => {
+          const inputEl = document.querySelector(`input[data-format-target="${id}"]`);
+          const displayEl = document.getElementById(`${id.replace('Date', '-date')}-formatted`);
+          if (inputEl && displayEl) {
+            displayEl.textContent = this.formatDate(inputEl.value, dateFormat);
+          }
+        });
+
+        const timeInput = document.querySelector('input[data-format-target="time"]');
+        const timeDisplay = document.getElementById('time-formatted');
+        if (timeInput && timeDisplay) {
+          timeDisplay.textContent = this.formatTime(timeInput.value, timeFormat);
+        }
+      },
+
+      formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(`${dateString}T00:00:00Z`);
+        if (Number.isNaN(date.getTime())) return '';
+        return date.toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+          timeZone: 'UTC'
+        });
+      },
+
+      calculateAge(birthDateString, deathDateString) {
+        if (!birthDateString || !deathDateString) return null;
+        
+        const birthDate = new Date(`${birthDateString}T00:00:00Z`);
+        const deathDate = new Date(`${deathDateString}T00:00:00Z`);
+        
+        if (Number.isNaN(birthDate.getTime()) || Number.isNaN(deathDate.getTime())) return null;
+        
+        // Calculate age
+        let age = deathDate.getUTCFullYear() - birthDate.getUTCFullYear();
+        const monthDiff = deathDate.getUTCMonth() - birthDate.getUTCMonth();
+        const dayDiff = deathDate.getUTCDate() - birthDate.getUTCDate();
+        
+        // Adjust if birthday hasn't occurred yet in the death year
+        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+          age--;
+        }
+        
+        return age >= 0 ? age : null;
+      },
+
+      formatTime(timeString) {
+        if (!timeString) return '';
+        const [hoursStr, minutesStr] = timeString.split(':');
+        const hours = Number(hoursStr);
+        const minutes = Number(minutesStr);
+        if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return '';
+        const period = this.getTimePeriodLabel(hours);
+        const hourWord = this.convertHourToWords(hours);
+        if (minutes === 0) {
+          return `${hourWord} O'Clock ${period}`;
+        }
+        const minuteWords = this.convertMinutesToWords(minutes);
+        return `${hourWord} ${minuteWords} ${period}`;
+      },
+
+      getTimePeriodLabel(hours) {
+        if (hours >= 17) return 'in the Evening';
+        if (hours >= 12) return 'in the Afternoon';
+        return 'in the Morning';
+      },
+
+      convertHourToWords(hours) {
+        const hourWords = ['Twelve', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven'];
+        const normalized = ((hours % 12) + 12) % 12;
+        return hourWords[normalized];
+      },
+
+      convertMinutesToWords(minutes) {
+        if (!Number.isFinite(minutes)) return '';
+        if (minutes === 0) return '';
+        const ones = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+        const tens = ['Zero', 'Ten', 'Twenty', 'Thirty', 'Forty', 'Fifty'];
+        if (minutes < 10) {
+          return `Oh ${ones[minutes]}`;
+        }
+        if (minutes < 20) {
+          return ones[minutes];
+        }
+        const tenValue = Math.floor(minutes / 10);
+        const oneValue = minutes % 10;
+        if (oneValue === 0) {
+          return tens[tenValue];
+        }
+        return `${tens[tenValue]}-${ones[oneValue]}`;
+      },
+
+      showError(errorDiv, message) {
+        errorDiv.textContent = message;
+        errorDiv.classList.remove('hidden');
+        setTimeout(() => { errorDiv.classList.add('hidden'); }, 5000);
+      },
+
+      getErrorMessage(errorCode) {
+        const messages = {
+          'auth/user-not-found': 'No account found with this email.',
+          'auth/wrong-password': 'Incorrect password.',
+          'auth/email-already-in-use': 'An account with this email already exists.',
+          'auth/weak-password': 'Password should be at least 6 characters.',
+          'auth/invalid-email': 'Please enter a valid email address.'
+        };
+        return messages[errorCode] || 'An error occurred. Please try again.';
+      },
+
+      notify(message, type = 'success') {
+        const toast = document.createElement('div');
+        const colors = { success: 'bg-green-500', error: 'bg-red-500', info: 'bg-blue-500' };
+        toast.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${colors[type] || 'bg-gray-500'} text-white`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.remove(); }, 3000);
+      },
+
+      // Obituary Generation Functions
+      async generateObituary(corrections = null) {
+        const generateBtn = document.getElementById('generate-obituary-btn');
+        const regenerateBtn = document.getElementById('regenerate-obituary-btn');
+        const loadingDiv = document.getElementById('obituary-loading');
+        const errorDiv = document.getElementById('obituary-error');
+        const previewSection = document.getElementById('obituary-preview-section');
+        
+        // Show loading state
+        loadingDiv.classList.remove('hidden');
+        errorDiv.classList.add('hidden');
+        if (generateBtn) generateBtn.disabled = true;
+        if (regenerateBtn) regenerateBtn.disabled = true;
+
+        try {
+          // Collect all form data
+          const formData = this.collectAllFormData();
+          
+          // Build the prompt for AI
+          let prompt = this.buildObituaryPrompt(formData);
+          
+          // If there are corrections, add them to the prompt
+          if (corrections) {
+            prompt += `\n\nPREVIOUS VERSION CORRECTIONS REQUESTED:\n${corrections}\n\nPlease regenerate the obituary incorporating these corrections while maintaining the overall quality and style.`;
+          }
+
+          // Call the AI API (you'll need to implement this with your AI service)
+          const obituaryText = await this.callAIService(prompt);
+          
+          // Display the generated obituary
+          document.getElementById('obituary-text').innerHTML = obituaryText;
+          previewSection.classList.remove('hidden');
+          
+          // Clear corrections textarea after successful regeneration
+          if (corrections) {
+            document.getElementById('obituary-corrections').value = '';
+          }
+          
+          this.notify('Obituary generated successfully!', 'success');
+          
+        } catch (error) {
+          console.error('Error generating obituary:', error);
+          errorDiv.querySelector('p').textContent = 'Failed to generate obituary. Please try again.';
+          errorDiv.classList.remove('hidden');
+          this.notify('Failed to generate obituary', 'error');
+        } finally {
+          loadingDiv.classList.add('hidden');
+          if (generateBtn) generateBtn.disabled = false;
+          if (regenerateBtn) regenerateBtn.disabled = false;
+        }
+      },
+
+      collectAllFormData() {
+        const formData = {};
+        const form = document.getElementById('obituary-form');
+        
+        if (!form) return formData;
+        
+        // Get all form inputs
+        const inputs = form.querySelectorAll('input, textarea, select');
+        
+        inputs.forEach(input => {
+          const name = input.name;
+          if (!name) return;
+          
+          let value;
+          if (input.type === 'checkbox') {
+            value = input.checked;
+          } else if (input.type === 'radio') {
+            if (input.checked) {
+              value = input.value;
+            } else {
+              return; // Skip unchecked radio buttons
+            }
+          } else {
+            value = input.value;
+          }
+          
+          // Set the value in formData using the name path
+          this.setNestedValue(formData, name, value);
+        });
+        
+        return formData;
+      },
+
+      setNestedValue(obj, path, value) {
+        const keys = path.split('.');
+        let current = obj;
+        
+        for (let i = 0; i < keys.length - 1; i++) {
+          const key = keys[i];
+          if (!(key in current)) {
+            current[key] = {};
+          }
+          current = current[key];
+        }
+        
+        current[keys[keys.length - 1]] = value;
+      },
+
+      buildObituaryPrompt(formData) {
+        let prompt = `You are a professional obituary writer. Please write a beautiful, heartfelt, and comprehensive obituary based on the following information:\n\n`;
+        
+        // Personal Information
+        if (formData.personal) {
+          prompt += `PERSONAL INFORMATION:\n`;
+          if (formData.personal.fullLegalName) prompt += `Name: ${formData.personal.fullLegalName}\n`;
+          if (formData.personal.dateOfBirth) prompt += `Date of Birth: ${formData.personal.dateOfBirth}\n`;
+          if (formData.personal.placeOfBirth) prompt += `Place of Birth: ${formData.personal.placeOfBirth}\n`;
+          if (formData.personal.dateOfDeath) prompt += `Date of Death: ${formData.personal.dateOfDeath}\n`;
+          if (formData.personal.placeOfDeath) prompt += `Place of Death: ${formData.personal.placeOfDeath}\n`;
+          if (formData.personal.ageAtPassing) prompt += `Age at Passing: ${formData.personal.ageAtPassing}\n`;
+          prompt += `\n`;
+        }
+
+        // Marriage Information
+        if (formData.surviving && formData.surviving.marriageStatus === 'yes' && formData.surviving.spouse) {
+          prompt += `MARRIAGE:\n`;
+          if (formData.surviving.spouse.name) prompt += `Spouse: ${formData.surviving.spouse.name}\n`;
+          if (formData.surviving.spouse.marriageYear) prompt += `Married in: ${formData.surviving.spouse.marriageYear}\n`;
+          if (formData.surviving.spouse.marriageLocation) prompt += `Marriage Location: ${formData.surviving.spouse.marriageLocation}\n`;
+          if (formData.surviving.spouse.marriageDetails) prompt += `Marriage Details: ${formData.surviving.spouse.marriageDetails}\n`;
+          if (formData.surviving.spouse.deceased) {
+            prompt += `Spouse Status: Deceased`;
+            if (formData.surviving.spouse.deathDate) prompt += ` (${formData.surviving.spouse.deathDate})`;
+            prompt += `\n`;
+          }
+          prompt += `\n`;
+        }
+
+        // Faith Information
+        if (formData.faith) {
+          prompt += `FAITH & RELIGIOUS BACKGROUND:\n`;
+          if (formData.faith.religiousAffiliation) prompt += `Religious Affiliation: ${formData.faith.religiousAffiliation}\n`;
+          if (formData.faith.religiousAffiliationOther) prompt += `Details: ${formData.faith.religiousAffiliationOther}\n`;
+          prompt += `\n`;
+        }
+
+        // Family Information
+        if (formData.surviving) {
+          prompt += `FAMILY:\n`;
+          
+          // Parents
+          if (formData.surviving.parents) {
+            prompt += `Parents:\n`;
+            Object.values(formData.surviving.parents).forEach(parent => {
+              if (parent.name) {
+                prompt += `  - ${parent.relationship || 'Parent'}: ${parent.name}`;
+                if (parent.deceased) prompt += ` (Deceased)`;
+                prompt += `\n`;
+              }
+            });
+          }
+          
+          // Siblings
+          if (formData.surviving.siblings) {
+            prompt += `Siblings:\n`;
+            Object.values(formData.surviving.siblings).forEach(sibling => {
+              if (sibling.name) {
+                prompt += `  - ${sibling.name}`;
+                if (sibling.relationshipType) prompt += ` (${sibling.relationshipType})`;
+                prompt += `\n`;
+              }
+            });
+          }
+          
+          // Children
+          if (formData.surviving.children) {
+            prompt += `Children:\n`;
+            Object.values(formData.surviving.children).forEach(child => {
+              if (child.name) {
+                prompt += `  - ${child.name}`;
+                if (child.relationshipType) prompt += ` (${child.relationshipType})`;
+                prompt += `\n`;
+              }
+            });
+          }
+          
+          prompt += `\n`;
+        }
+
+        // Education
+        if (formData.education) {
+          prompt += `EDUCATION:\n`;
+          if (formData.education.colleges) {
+            Object.values(formData.education.colleges).forEach(college => {
+              if (college.schoolName) {
+                prompt += `  - ${college.schoolName}`;
+                if (college.degree) prompt += `, ${college.degree}`;
+                if (college.graduationYear) prompt += ` (${college.graduationYear})`;
+                prompt += `\n`;
+              }
+            });
+          }
+          prompt += `\n`;
+        }
+
+        // Career
+        if (formData.career) {
+          prompt += `CAREER:\n`;
+          if (formData.career.positions) {
+            Object.values(formData.career.positions).forEach(position => {
+              if (position.title && position.employer) {
+                prompt += `  - ${position.title} at ${position.employer}`;
+                if (position.yearsActive) prompt += ` (${position.yearsActive})`;
+                prompt += `\n`;
+              }
+            });
+          }
+          prompt += `\n`;
+        }
+
+        // Hobbies & Interests
+        if (formData.hobbies) {
+          prompt += `HOBBIES & INTERESTS:\n`;
+          if (formData.hobbies.selectedHobbies) {
+            Object.entries(formData.hobbies.selectedHobbies).forEach(([hobby, checked]) => {
+              if (checked) prompt += `  - ${hobby}\n`;
+            });
+          }
+          if (formData.hobbies.other) prompt += `  - ${formData.hobbies.other}\n`;
+          prompt += `\n`;
+        }
+
+        // Additional Information
+        if (formData.additional && formData.additional.otherInformation) {
+          prompt += `ADDITIONAL INFORMATION:\n${formData.additional.otherInformation}\n\n`;
+        }
+
+        prompt += `\nPlease write a touching, well-structured obituary that honors this person's life, incorporating all the relevant information provided. 
+
+IMPORTANT INSTRUCTIONS:
+- Write in a warm, compassionate, and respectful tone
+- Create natural flowing paragraphs (not bullet points or lists)
+- Weave the information together into a cohesive narrative
+- Begin with the announcement of passing and basic facts
+- Include marriage/spouse information naturally in the text
+- Clearly indicate if parents or spouse are deceased (e.g., "preceded in death by")
+- Mention surviving family members appropriately
+- Incorporate their life story, career, education, and interests
+- End with a meaningful reflection on their legacy or impact
+- Write approximately 300-500 words
+- Use paragraph breaks for readability
+- DO NOT use markdown formatting - output plain text with natural paragraph breaks`;
+        
+        return prompt;
+      },
+
+      async callAIService(prompt) {
+        // Call our secure backend function instead of calling Claude API directly
+        // This keeps the API key secure on the server
+        const API_URL = '/.netlify/functions/generate-obituary';
+        
+        try {
+          const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              prompt: prompt
+            })
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Backend API Error:', errorData);
+            throw new Error(`API request failed: ${response.status} - ${errorData.error || 'Unknown error'}`);
+          }
+
+          const data = await response.json();
+          
+          // Extract the generated text from the backend response
+          if (data.text) {
+            let generatedText = data.text;
+            
+            // Convert markdown formatting to HTML for better display
+            generatedText = generatedText
+              .replace(/\n\n/g, '</p><p>')  // Convert double newlines to paragraphs
+              .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Convert **bold**
+              .replace(/\*(.*?)\*/g, '<em>$1</em>')  // Convert *italic*
+              .replace(/\n/g, '<br>');  // Convert single newlines to breaks
+            
+            // Wrap in paragraph tags if not already
+            if (!generatedText.startsWith('<p>')) {
+              generatedText = '<p>' + generatedText + '</p>';
+            }
+            
+            return generatedText;
+          } else {
+            throw new Error('Unexpected API response structure');
+          }
+          
+        } catch (error) {
+          console.error('Error calling backend API:', error);
+          
+          // Provide helpful error messages
+          if (error.message.includes('401')) {
+            throw new Error('API key is invalid. Please check your Claude API key configuration.');
+          } else if (error.message.includes('429')) {
+            throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+          } else if (error.message.includes('500') || error.message.includes('503')) {
+            throw new Error('Service is temporarily unavailable. Please try again in a moment.');
+          } else {
+            throw new Error(`Failed to generate obituary: ${error.message}`);
+          }
+        }
+      },
+
+      setupObituaryGeneration() {
+        const generateBtn = document.getElementById('generate-obituary-btn');
+        const regenerateBtn = document.getElementById('regenerate-obituary-btn');
+        const previewBtn = document.getElementById('preview-obituary-btn');
+        const correctionsTextarea = document.getElementById('obituary-corrections');
+
+        if (generateBtn) {
+          generateBtn.addEventListener('click', () => {
+            this.generateObituary();
+          });
+        }
+
+        if (regenerateBtn) {
+          regenerateBtn.addEventListener('click', () => {
+            const corrections = correctionsTextarea ? correctionsTextarea.value.trim() : '';
+            if (corrections) {
+              this.generateObituary(corrections);
+            } else {
+              this.notify('Please enter your corrections before regenerating', 'info');
+            }
+          });
+        }
+
+        if (previewBtn) {
+          previewBtn.addEventListener('click', () => {
+            // Create a modal or new window to show full preview
+            const obituaryText = document.getElementById('obituary-text').innerHTML;
+            const previewWindow = window.open('', 'Obituary Preview', 'width=800,height=600');
+            previewWindow.document.write(`
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <title>Obituary Preview</title>
+                <style>
+                  body {
+                    font-family: 'Merriweather', serif;
+                    max-width: 800px;
+                    margin: 40px auto;
+                    padding: 20px;
+                    line-height: 1.8;
+                  }
+                  h1 {
+                    text-align: center;
+                    margin-bottom: 30px;
+                  }
+                </style>
+                <link href="https://fonts.googleapis.com/css2?family=Merriweather&display=swap" rel="stylesheet">
+              </head>
+              <body>
+                <h1>Obituary Preview</h1>
+                ${obituaryText}
+              </body>
+              </html>
+            `);
+            previewWindow.document.close();
+          });
+        }
+      }
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => App.init());
+    } else {
+      App.init();
+    }
+  </script>
+
+  <script> (function () { // Helper: find the adjacent error <small> function getErrorEl(input) { const sib = input.nextElementSibling; return (sib && sib.classList && sib.classList.contains('field-error')) ? sib : null; } function setError(input, msg) { const err = getErrorEl(input); if (!err) return; if (msg) { input.setAttribute('aria-invalid','true'); err.textContent = msg; } else { input.removeAttribute('aria-invalid'); err.textContent = ''; } } function isVisible(el) { if (!el) return false; const style = window.getComputedStyle(el); return el.offsetParent !== null || (style.display !== 'none' && style.visibility !== 'hidden'); } function isFutureDate(val) { const d = new Date(val); if (isNaN(d)) return false; const today = new Date(); today.setHours(0,0,0,0); d.setHours(0,0,0,0); return d.getTime() > today.getTime(); } function validate(el) { const id = el.id || ''; const name = el.name || ''; const type = el.type || ''; // Required: Full Legal Name if (id === 'full-legal-name') { const ok = el.value.trim().length > 0; setError(el, ok ? '' : 'Please enter the full legal name.'); return; } // Required: Date of Birth if (id === 'date-of-birth') { const ok = !!el.value; setError(el, ok ? '' : 'Please select a valid birth date.'); return; } // Date of Death - if present, must not be in the future if (id === 'date-of-death') { if (el.value && isFutureDate(el.value)) { setError(el, 'Date of death cannot be in the future.'); } else { setError(el, ''); } return; } // Graduation Year (Education > College/University) if (/^education\.colleges\.\d+\.graduationYear$/.test(name)) { const ok = /^\d{4}$/.test(el.value.trim()); setError(el, ok || el.value.trim()==='' ? '' : 'Enter a 4-digit year (e.g., 2009).'); return; } // Military Years (Start/End), only if present if (name === 'career.serviceStartYear' || name === 'career.serviceEndYear') { const ok = /^\d{4}$/.test(el.value.trim()); setError(el, ok || el.value.trim()==='' ? '' : 'Enter a 4-digit year (e.g., 2009).'); return; } // Baptism Date (visible only) if (/^faith\.churchMemberships\.\d+\.baptismDate$/.test(name)) { if (isVisible(el)) { if (!el.value || isFutureDate(el.value)) { setError(el, 'Please enter a valid baptism date.'); } else { setError(el, ''); } } else { setError(el, ''); } return; } // Religious Affiliation Other (require when "Other" selected) if (name === 'faith.religiousAffiliationOther') { const select = document.getElementById('religious-affiliation'); const requireOther = select && String(select.value).toLowerCase() === 'other'; const ok = !requireOther || el.value.trim().length > 0; setError(el, ok ? '' : 'Please provide the affiliation details.'); return; } // Got Saved Here? details (e.g., salvationDate), only if present and visible if (/^faith\.churchMemberships\.\d+\.salvationDate$/.test(name) || /salvation/.test(name)) { if (isVisible(el)) { const ok = (el.type === 'date') ? !!el.value : el.value.trim().length > 0; setError(el, ok ? '' : 'Please provide details for this selection.'); } else { setError(el, ''); } return; } } // Event delegation for blur then input-after-blur document.addEventListener('blur', function(e){ const el = e.target; if (!el || !('name' in el || 'id' in el)) return; el.dataset.touched = 'true'; validate(el); }, true); document.addEventListener('input', function(e){ const el = e.target; if (!el || el.dataset.touched !== 'true') return; validate(el); }); // Also revalidate "Other" text when the affiliation changes const aff = document.getElementById('religious-affiliation'); if (aff) { aff.addEventListener('change', function(){ const other = document.querySelector('input[name="faith.religiousAffiliationOther"]'); if (other && other.dataset.touched === 'true') validate(other); }); } })(); </script>
+</body>
+
+</html>
