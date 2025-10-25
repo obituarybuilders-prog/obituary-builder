@@ -1,5 +1,4 @@
-// Netlify serverless function to call Claude API securely
-// This keeps your API key secret on the server
+const fetch = require('node-fetch');
 
 exports.handler = async (event, context) => {
   // Only allow POST requests
@@ -85,21 +84,3 @@ exports.handler = async (event, context) => {
     };
   }
 };
-```
-
-5. Scroll down to "Commit changes"
-6. In the commit message, type: "Add obituary generation function"
-7. Click **"Commit changes"**
-
----
-
-## **That's it!**
-
-Your repository should now have this structure:
-```
-obituary-builder/
-├── api.html
-├── netlify.toml
-└── netlify/
-    └── functions/
-        └── generate-obituary.js
