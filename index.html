@@ -3165,6 +3165,12 @@ CRITICAL STYLE REQUIREMENTS:
 - This is for the funeral program, not a newspaper announcement
 - Write in a warm, respectful, and celebratory tone that honors their life
 
+CRITICAL CONTENT REQUIREMENT:
+- EVERY piece of information provided below MUST be included in the obituary
+- If a field is filled out or a box is checked, it MUST appear in the final text
+- Families expect to see everything they provided - do not omit any details
+- Weave all information naturally into the narrative
+
 `;
         
         // Personal Information
@@ -3190,19 +3196,25 @@ CRITICAL STYLE REQUIREMENTS:
 
         // Faith Information
         if (formData.faith) {
-          prompt += `FAITH & RELIGIOUS BACKGROUND:\n`;
+          prompt += `FAITH & RELIGIOUS BACKGROUND (MUST INCLUDE ALL):\n`;
           if (formData.faith.religiousAffiliation) prompt += `Religious Affiliation: ${formData.faith.religiousAffiliation}\n`;
           if (formData.faith.religiousAffiliationOther) prompt += `Details: ${formData.faith.religiousAffiliationOther}\n`;
+          if (formData.faith.baptismDate) prompt += `Baptism Date: ${formData.faith.baptismDate}\n`;
+          if (formData.faith.baptismLocation) prompt += `Baptism Location: ${formData.faith.baptismLocation}\n`;
+          if (formData.faith.confirmationDate) prompt += `Confirmation Date: ${formData.faith.confirmationDate}\n`;
+          if (formData.faith.homeChurch) prompt += `Home Church: ${formData.faith.homeChurch}\n`;
+          if (formData.faith.currentChurch) prompt += `Current Church: ${formData.faith.currentChurch}\n`;
+          if (formData.faith.ministries) prompt += `Church Ministries/Involvement: ${formData.faith.ministries}\n`;
           prompt += `\n`;
         }
 
         // Family Information - Parents
         if (formData.surviving && formData.surviving.parents) {
-          prompt += `PARENTS:\n`;
+          prompt += `PARENTS (MUST INCLUDE ALL):\n`;
           Object.values(formData.surviving.parents).forEach(parent => {
             if (parent.name) {
               prompt += `  - ${parent.relationship || 'Parent'}: ${parent.name}`;
-              if (parent.deceased) prompt += ` (Deceased - use "late" prefix)`;
+              if (parent.deceased) prompt += ` (Deceased - use "late" prefix in opening sentence)`;
               prompt += `\n`;
             }
           });
@@ -3213,7 +3225,7 @@ CRITICAL STYLE REQUIREMENTS:
         if (formData.surviving && formData.surviving.siblings) {
           const deceasedSiblings = Object.values(formData.surviving.siblings).filter(s => s.deceased && s.name);
           if (deceasedSiblings.length > 0) {
-            prompt += `PRECEDED IN DEATH BY (Siblings):\n`;
+            prompt += `PRECEDED IN DEATH BY (Siblings) - MUST LIST ALL:\n`;
             deceasedSiblings.forEach(sibling => {
               prompt += `  - ${sibling.name}`;
               if (sibling.relationshipType) prompt += ` (${sibling.relationshipType})`;
@@ -3225,12 +3237,13 @@ CRITICAL STYLE REQUIREMENTS:
 
         // Education
         if (formData.education && formData.education.colleges) {
-          prompt += `EDUCATION:\n`;
+          prompt += `EDUCATION (MUST INCLUDE ALL SCHOOLS):\n`;
           Object.values(formData.education.colleges).forEach(college => {
             if (college.schoolName) {
               prompt += `  - ${college.schoolName}`;
               if (college.degree) prompt += `, ${college.degree}`;
               if (college.graduationYear) prompt += ` (Class of ${college.graduationYear})`;
+              if (college.honors) prompt += ` - ${college.honors}`;
               prompt += `\n`;
             }
           });
@@ -3239,12 +3252,13 @@ CRITICAL STYLE REQUIREMENTS:
 
         // Career
         if (formData.career && formData.career.positions) {
-          prompt += `CAREER${isClergy ? '/MINISTRY' : ''}:\n`;
+          prompt += `CAREER${isClergy ? '/MINISTRY' : ''} (MUST INCLUDE ALL POSITIONS):\n`;
           Object.values(formData.career.positions).forEach(position => {
             if (position.title && position.employer) {
               prompt += `  - ${position.title} at ${position.employer}`;
               if (position.yearsActive) prompt += ` (${position.yearsActive})`;
               if (position.location) prompt += `, ${position.location}`;
+              if (position.achievements) prompt += ` - Achievements: ${position.achievements}`;
               prompt += `\n`;
             }
           });
@@ -3253,7 +3267,7 @@ CRITICAL STYLE REQUIREMENTS:
 
         // Marriage Information
         if (formData.surviving && formData.surviving.marriageStatus === 'yes' && formData.surviving.spouse) {
-          prompt += `MARRIAGE:\n`;
+          prompt += `MARRIAGE (MUST INCLUDE ALL DETAILS):\n`;
           if (formData.surviving.spouse.marriageDate) prompt += `Marriage Date: ${formData.surviving.spouse.marriageDate}\n`;
           if (formData.surviving.spouse.name) prompt += `Spouse: ${formData.surviving.spouse.name}\n`;
           if (formData.surviving.spouse.marriageLocation) prompt += `Marriage Location: ${formData.surviving.spouse.marriageLocation}\n`;
@@ -3267,54 +3281,157 @@ CRITICAL STYLE REQUIREMENTS:
           prompt += `\n`;
         }
 
-        // Hobbies & Interests
-        if (formData.hobbies) {
-          prompt += `HOBBIES & INTERESTS:\n`;
-          if (formData.hobbies.selectedHobbies) {
-            Object.entries(formData.hobbies.selectedHobbies).forEach(([hobby, checked]) => {
-              if (checked) prompt += `  - ${hobby}\n`;
-            });
-          }
-          if (formData.hobbies.other) prompt += `  - ${formData.hobbies.other}\n`;
+        // Military Service
+        if (formData.career && formData.career.militaryService) {
+          prompt += `MILITARY SERVICE (MUST INCLUDE):\n`;
+          if (formData.career.militaryBranch) prompt += `Branch: ${formData.career.militaryBranch}\n`;
+          if (formData.career.militaryRank) prompt += `Rank: ${formData.career.militaryRank}\n`;
+          if (formData.career.militaryYears) prompt += `Years of Service: ${formData.career.militaryYears}\n`;
+          if (formData.career.militaryHonors) prompt += `Honors: ${formData.career.militaryHonors}\n`;
           prompt += `\n`;
         }
 
-        // Surviving Family
-        prompt += `SURVIVORS (Those left to cherish memories):\n`;
+        // Hobbies & Interests
+        if (formData.hobbies) {
+          let hasHobbies = false;
+          let hobbiesList = [];
+          
+          if (formData.hobbies.selectedHobbies) {
+            Object.entries(formData.hobbies.selectedHobbies).forEach(([hobby, checked]) => {
+              if (checked) {
+                hasHobbies = true;
+                hobbiesList.push(hobby);
+              }
+            });
+          }
+          if (formData.hobbies.other) {
+            hasHobbies = true;
+            hobbiesList.push(formData.hobbies.other);
+          }
+          
+          if (hasHobbies) {
+            prompt += `HOBBIES & INTERESTS (MUST INCLUDE ALL):\n`;
+            hobbiesList.forEach(hobby => {
+              prompt += `  - ${hobby}\n`;
+            });
+            prompt += `\n`;
+          }
+        }
+
+        // Organizations & Memberships
+        if (formData.career && formData.career.organizations) {
+          prompt += `ORGANIZATIONS & MEMBERSHIPS (MUST INCLUDE ALL):\n`;
+          Object.values(formData.career.organizations).forEach(org => {
+            if (org.name) {
+              prompt += `  - ${org.name}`;
+              if (org.role) prompt += ` (${org.role})`;
+              if (org.years) prompt += ` - ${org.years}`;
+              prompt += `\n`;
+            }
+          });
+          prompt += `\n`;
+        }
+
+        // Surviving Family - CRITICAL FORMATTING SECTION
+        prompt += `SURVIVORS (Those left to cherish memories) - CRITICAL FORMATTING:\n\n`;
         
         // Spouse (if living)
         if (formData.surviving && formData.surviving.marriageStatus === 'yes' && 
             formData.surviving.spouse && formData.surviving.spouse.name && 
             !formData.surviving.spouse.deceased) {
           prompt += `Spouse: ${formData.surviving.spouse.name}`;
-          if (formData.surviving.spouse.location) prompt += ` (${formData.surviving.spouse.location})`;
-          prompt += `\n`;
+          if (formData.surviving.spouse.location) prompt += ` of ${formData.surviving.spouse.location}`;
+          prompt += `\n\n`;
         }
         
-        // Children
+        // Children - WITH SPECIFIC FORMATTING RULES
         if (formData.surviving && formData.surviving.children) {
-          prompt += `Children:\n`;
-          Object.values(formData.surviving.children).forEach(child => {
-            if (child.name) {
-              prompt += `  - ${child.name}`;
-              if (child.spouse) prompt += ` (${child.spouse})`;
-              if (child.location) prompt += `, ${child.location}`;
-              if (child.relationshipType && child.relationshipType !== 'Biological') prompt += ` [${child.relationshipType}]`;
+          const childrenArray = Object.values(formData.surviving.children).filter(c => c.name);
+          
+          if (childrenArray.length > 0) {
+            prompt += `CHILDREN - CRITICAL FORMATTING RULES:\n`;
+            prompt += `FORMAT: List daughters FIRST (oldest to youngest), then sons (oldest to youngest)\n`;
+            prompt += `SPOUSE FORMAT: Name (Spouse) of Location\n`;
+            prompt += `LOCATION GROUPING: If multiple children from same city, group them: "all of Birmingham, AL"\n\n`;
+            
+            // Separate daughters and sons
+            const daughters = childrenArray.filter(c => c.gender && c.gender.toLowerCase() === 'female');
+            const sons = childrenArray.filter(c => c.gender && c.gender.toLowerCase() === 'male');
+            const unknownGender = childrenArray.filter(c => !c.gender || (c.gender.toLowerCase() !== 'female' && c.gender.toLowerCase() !== 'male'));
+            
+            // List daughters
+            if (daughters.length > 0) {
+              prompt += `Daughters (${daughters.length}):\n`;
+              daughters.forEach((daughter, index) => {
+                prompt += `  ${index + 1}. ${daughter.name}`;
+                if (daughter.spouse) prompt += ` (${daughter.spouse})`;
+                if (daughter.location) prompt += ` of ${daughter.location}`;
+                if (daughter.relationshipType && daughter.relationshipType !== 'Biological') prompt += ` [${daughter.relationshipType}]`;
+                prompt += `\n`;
+              });
               prompt += `\n`;
             }
-          });
+            
+            // List sons
+            if (sons.length > 0) {
+              prompt += `Sons (${sons.length}):\n`;
+              sons.forEach((son, index) => {
+                prompt += `  ${index + 1}. ${son.name}`;
+                if (son.spouse) prompt += ` (${son.spouse})`;
+                if (son.location) prompt += ` of ${son.location}`;
+                if (son.relationshipType && son.relationshipType !== 'Biological') prompt += ` [${son.relationshipType}]`;
+                prompt += `\n`;
+              });
+              prompt += `\n`;
+            }
+            
+            // List children with unknown gender
+            if (unknownGender.length > 0) {
+              prompt += `Children (gender not specified):\n`;
+              unknownGender.forEach((child, index) => {
+                prompt += `  ${index + 1}. ${child.name}`;
+                if (child.spouse) prompt += ` (${child.spouse})`;
+                if (child.location) prompt += ` of ${child.location}`;
+                if (child.relationshipType && child.relationshipType !== 'Biological') prompt += ` [${child.relationshipType}]`;
+                prompt += `\n`;
+              });
+              prompt += `\n`;
+            }
+            
+            prompt += `IMPORTANT: When writing, count children and use proper grammar:\n`;
+            prompt += `- If 1 daughter: "one daughter" or "a daughter"\n`;
+            prompt += `- If 2+ daughters: "two daughters" or "[number] daughters"\n`;
+            prompt += `- Same for sons\n`;
+            prompt += `- Use semicolons (;) between each child\n`;
+            prompt += `- If multiple children from same location, group them: "all of Birmingham, AL"\n\n`;
+          }
         }
         
         // Grandchildren
         if (formData.surviving && formData.surviving.grandchildren) {
           const grandchildrenList = Object.values(formData.surviving.grandchildren).filter(gc => gc.name);
           if (grandchildrenList.length > 0) {
-            prompt += `Grandchildren:\n`;
-            grandchildrenList.forEach(grandchild => {
-              prompt += `  - ${grandchild.name}`;
-              if (grandchild.location) prompt += `, ${grandchild.location}`;
+            prompt += `GRANDCHILDREN (MUST LIST ALL ${grandchildrenList.length}):\n`;
+            grandchildrenList.forEach((grandchild, index) => {
+              prompt += `  ${index + 1}. ${grandchild.name}`;
+              if (grandchild.location) prompt += ` of ${grandchild.location}`;
               prompt += `\n`;
             });
+            prompt += `\nFormat: Use semicolons between names. Group by location if multiple from same city.\n\n`;
+          }
+        }
+        
+        // Great-grandchildren
+        if (formData.surviving && formData.surviving.greatGrandchildren) {
+          const greatGrandchildrenList = Object.values(formData.surviving.greatGrandchildren).filter(ggc => ggc.name);
+          if (greatGrandchildrenList.length > 0) {
+            prompt += `GREAT-GRANDCHILDREN (MUST LIST ALL ${greatGrandchildrenList.length}):\n`;
+            greatGrandchildrenList.forEach((ggc, index) => {
+              prompt += `  ${index + 1}. ${ggc.name}`;
+              if (ggc.location) prompt += ` of ${ggc.location}`;
+              prompt += `\n`;
+            });
+            prompt += `\n`;
           }
         }
         
@@ -3322,20 +3439,41 @@ CRITICAL STYLE REQUIREMENTS:
         if (formData.surviving && formData.surviving.siblings) {
           const livingSiblings = Object.values(formData.surviving.siblings).filter(s => !s.deceased && s.name);
           if (livingSiblings.length > 0) {
-            prompt += `Siblings:\n`;
-            livingSiblings.forEach(sibling => {
-              prompt += `  - ${sibling.name}`;
-              if (sibling.location) prompt += `, ${sibling.location}`;
+            prompt += `SIBLINGS - LIVING (MUST LIST ALL ${livingSiblings.length}):\n`;
+            livingSiblings.forEach((sibling, index) => {
+              prompt += `  ${index + 1}. ${sibling.name}`;
+              if (sibling.spouse) prompt += ` (${sibling.spouse})`;
+              if (sibling.location) prompt += ` of ${sibling.location}`;
+              if (sibling.relationshipType) prompt += ` [${sibling.relationshipType}]`;
               prompt += `\n`;
             });
+            prompt += `\nSeparate by gender if specified: Sisters first, then Brothers\n\n`;
           }
         }
         
-        prompt += `\nNote: End survivors section with "and a host of nieces, nephews, cousins, other relatives and friends."\n\n`;
+        // Extended Family
+        if (formData.surviving && formData.surviving.extendedFamily) {
+          const extendedList = Object.values(formData.surviving.extendedFamily).filter(ef => ef.name);
+          if (extendedList.length > 0) {
+            prompt += `EXTENDED FAMILY (MUST LIST ALL):\n`;
+            extendedList.forEach((person, index) => {
+              prompt += `  ${index + 1}. ${person.relationship}: ${person.name}`;
+              if (person.location) prompt += ` of ${person.location}`;
+              prompt += `\n`;
+            });
+            prompt += `\n`;
+          }
+        }
+        
+        prompt += `ENDING: Always end survivors section with "and a host of nieces, nephews, cousins, other relatives and friends."\n`;
+        if (isClergy) {
+          prompt += `For clergy, also add: "and church family" before the period.\n`;
+        }
+        prompt += `\n`;
 
         // Additional Information
         if (formData.additional && formData.additional.otherInformation) {
-          prompt += `ADDITIONAL INFORMATION:\n${formData.additional.otherInformation}\n\n`;
+          prompt += `ADDITIONAL INFORMATION (MUST INCLUDE):\n${formData.additional.otherInformation}\n\n`;
         }
 
         // Final instructions based on person's background
@@ -3345,31 +3483,43 @@ OBITUARY STRUCTURE FOR CLERGY/RELIGIOUS LEADER (Write 600-1000 words):
 
 1. OPENING: Start with "[Title] [Full Name] was born on [date] in [location] to [parents names with "late" prefix if deceased]."
 
-2. EARLY RELIGIOUS LIFE: Describe when they accepted Christ and their early church involvement. Mention home church where they grew up.
+2. EARLY RELIGIOUS LIFE: Describe when they accepted Christ and their early church involvement. MUST mention home church where they grew up.
 
-3. EDUCATION: List all educational institutions chronologically, including seminaries, with graduation years (e.g., "Class of 1997").
+3. EDUCATION: List ALL educational institutions chronologically, including seminaries, with graduation years (e.g., "Class of 1997"). Include ALL honors mentioned.
 
 4. ORDINATION/CALLING: If applicable, describe their ordination - who ordained them, when, where, and their first service/assignment.
 
-5. MINISTRY CAREER: Detail their ministry positions chronologically with specific dates, locations, and accomplishments. Include:
-   - All pastoral assignments with years of service
-   - Leadership roles in denominational organizations
-   - Special appointments or honors
-   - Community involvement and impact
+5. MINISTRY CAREER: Detail ALL ministry positions chronologically with specific dates, locations, and accomplishments. Include:
+   - ALL pastoral assignments with years of service
+   - ALL leadership roles in denominational organizations
+   - ALL special appointments or honors
+   - ALL community involvement mentioned
 
 6. MARRIAGE & FAMILY: Describe their marriage - date, location, spouse's full name. Mention children born from the union.
 
-7. CHARACTER & LEGACY: Include 2-3 sentences about their personality, ministry style, or impact on others.
+7. MILITARY SERVICE: If provided, include ALL details about their service.
 
-8. PRECEDED IN DEATH: List deceased spouse (if applicable) and deceased siblings with full names.
+8. HOBBIES/INTERESTS: Include ALL hobbies and interests mentioned.
 
-9. SURVIVORS: Begin with "Those left to cherish precious memories..." or similar phrase. List:
-   - Spouse with location (if living)
-   - Children with spouses in parentheses and locations
-   - Grandchildren with locations
-   - Siblings with locations
-   - Other significant family members
-   - End with "and a host of nieces, nephews, cousins, other relatives, friends, and church family."
+9. ORGANIZATIONS: Include ALL organizations and memberships.
+
+10. CHARACTER & LEGACY: Include 2-3 sentences about their personality, ministry style, or impact on others.
+
+11. PRECEDED IN DEATH: List ALL deceased family members with full names.
+
+12. SURVIVORS: CRITICAL FORMATTING - Follow these rules EXACTLY:
+    - Begin with "Those left to cherish precious memories..." or similar phrase
+    - Spouse with location (if living)
+    - Count and state number: "one daughter" or "three daughters"
+    - DAUGHTERS FIRST (oldest to youngest): Name (Spouse) of Location;
+    - SONS SECOND (oldest to youngest): Name (Spouse) of Location;
+    - Use semicolons between children
+    - If multiple children from same city: "all of Birmingham, AL"
+    - Grandchildren with locations
+    - Great-grandchildren if provided
+    - Siblings separated by gender: Sisters, then Brothers
+    - Extended family with relationships
+    - End with "and a host of nieces, nephews, cousins, other relatives, friends, and church family."
 
 TONE: Respectful, celebratory of their ministry, warm. Use titles (Bishop, Pastor, Reverend) consistently.
 `;
@@ -3380,44 +3530,66 @@ OBITUARY STRUCTURE FOR GENERAL OBITUARY (Write 400-600 words):
 1. OPENING: Start with "[Full Name] was born on [date] in [location] to [parents names with "late" prefix if deceased]."
    - If they had many siblings, mention birth order: "was the [ordinal] of [number] children"
 
-2. EARLY LIFE & FAITH: Describe their early religious background - when they accepted Christ, what church they joined. Keep brief but meaningful.
+2. EARLY LIFE & FAITH: Describe their early religious background - when they accepted Christ, what church they joined. Include ALL church details provided.
 
-3. EDUCATION: List their educational background with schools and graduation years (e.g., "graduated with honors from [School], class of [year]").
+3. EDUCATION: List ALL educational background with schools and graduation years. Include ALL honors.
 
-4. CAREER: Describe their work history chronologically. Include:
-   - Job titles and employers
-   - Years of service
-   - Retirements and length of service
-   - Multiple careers if applicable
+4. CAREER: Describe ALL work history chronologically. Include:
+   - ALL job titles and employers
+   - ALL years of service
+   - ALL retirements mentioned
+   - ALL achievements listed
 
-5. MARRIAGE & FAMILY: Describe marriage - "On [date], [name] married [spouse name]." Mention where they married if known. State "Through this union, the Lord blessed them with [number] children: [names]."
+5. MILITARY SERVICE: If provided, include ALL details about their service.
 
-6. LIFE TRANSITION (Optional): You may include a respectful phrase like "completed their earthly assignment on [date] and transitioned to their eternal home" OR simply move to survivors section.
+6. MARRIAGE & FAMILY: Describe marriage - "On [date], [name] married [spouse name]." Mention where they married. State "Through this union, the Lord blessed them with [number] children: [names]."
 
-7. PRECEDED IN DEATH: If applicable, list deceased spouse and deceased siblings with full names.
+7. HOBBIES/INTERESTS: Include ALL hobbies and interests mentioned.
 
-8. SURVIVORS: Begin with "Those left to cherish precious memories..." or "[Name] leaves to mourn his/her passing:" List:
-   - Spouse with location (if living)
-   - Children with locations (spouses in parentheses if applicable)
-   - Grandchildren with locations
-   - Siblings with locations
-   - Extended family members if significant
-   - End with "as well as a host of nieces, nephews, cousins, other relatives and friends."
+8. ORGANIZATIONS: Include ALL organizations and memberships.
+
+9. LIFE TRANSITION (Optional): You may include a respectful phrase like "completed their earthly assignment on [date] and transitioned to their eternal home" OR simply move to survivors section.
+
+10. PRECEDED IN DEATH: If applicable, list ALL deceased family members with full names.
+
+11. SURVIVORS: CRITICAL FORMATTING - Follow these rules EXACTLY:
+    - Begin with "Those left to cherish precious memories..." or "[Name] leaves to mourn his/her passing:"
+    - Spouse with location (if living)
+    - Count and state number: "one son" or "two daughters"
+    - DAUGHTERS FIRST (oldest to youngest): Name (Spouse) of Location;
+    - SONS SECOND (oldest to youngest): Name (Spouse) of Location;
+    - Use semicolons (;) between each child
+    - If multiple children from same city: "all of Birmingham, AL"
+    - Example: "She leaves to cherish her memories one daughter Vada (Jada) McDaniel of Birmingham, AL; two sons: John (Mary) Smith and David (Lisa) Smith, both of Atlanta, GA;"
+    - Grandchildren with locations (use semicolons)
+    - Great-grandchildren if provided
+    - Siblings: Sisters first, then Brothers with locations
+    - Extended family with relationships
+    - End with "as well as a host of nieces, nephews, cousins, other relatives and friends."
+
+CRITICAL FORMATTING EXAMPLES:
+✓ CORRECT: "one daughter Vada (Jada) McDaniel of Birmingham, AL"
+✓ CORRECT: "two sons: John (Mary) Smith of Atlanta, GA and David Smith of Memphis, TN"
+✓ CORRECT: "three daughters, all of Birmingham, AL"
+✗ WRONG: "Vada McDaniel (spouse: Jada)"
+✗ WRONG: Children listed without counting them first
 
 IMPORTANT STYLE NOTES:
 - Use respectful titles: "Mr.", "Mrs.", "Ms.", "Brother", "Sister", "Mother" as culturally appropriate
-- Include city/state locations for family members when known
-- List spouses of children in parentheses: "John (Mary) Smith"
-- Use warm, personal language that celebrates their life
-- Keep paragraphs readable - break up long sections
+- ALWAYS include spouses in parentheses next to the person's name
+- ALWAYS include locations for family members when provided
+- Use semicolons between family members in the same category
+- Group by location when multiple people from same city
 - Write in PAST TENSE throughout
+- Include EVERY detail provided - families expect to see everything they entered
 
 DO NOT:
 - Start with death announcement
 - Use markdown formatting
-- Create bullet points or numbered lists
+- Create bullet points or numbered lists in the final obituary
+- Omit ANY information that was provided
 - Write in present tense
-- Use overly formal or stiff language
+- Skip any checked boxes or filled fields
 `;
         }
 
