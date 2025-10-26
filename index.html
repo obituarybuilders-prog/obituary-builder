@@ -1249,71 +1249,60 @@
               </div>
 
               <!-- 3) MARRIAGE SECTION -->
-              <div class="space-y-4">
-                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Marriage</h3>
+              <div class="space-y-4 p-4 border rounded-lg bg-pink-50">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Marriage / Spouse Information</h3>
                 
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-2">Was the deceased married?</label>
-                  <div class="flex gap-4 mb-4">
-                    <label class="flex items-center">
-                      <input type="radio" name="family.marriage.wasMarried" value="yes" class="mr-2" id="marriage-yes-new" />
-                      <span class="text-sm font-medium">Yes</span>
-                    </label>
-                    <label class="flex items-center">
-                      <input type="radio" name="family.marriage.wasMarried" value="no" class="mr-2" id="marriage-no-new" />
-                      <span class="text-sm font-medium">No</span>
-                    </label>
-                  </div>
-                </div>
+                <p class="text-sm text-gray-600 mb-4">Please provide spouse information regardless of living status. The "Is spouse living?" question determines how they are mentioned in the obituary.</p>
 
-                <!-- Marriage Details Container (shown when "Yes" is selected) -->
-                <div id="marriage-details-container-new" class="hidden space-y-4 p-4 border rounded-lg bg-pink-50">
+                <!-- Spouse Information - ALWAYS VISIBLE -->
+                <div class="space-y-4">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label for="spouse-first-name-new" class="block text-sm font-medium text-gray-600 mb-1">Spouse's First Name</label>
-                      <input type="text" id="spouse-first-name-new" name="family.marriage.spouse.firstName" class="w-full p-2 border rounded-lg" placeholder="First name" />
+                      <input type="text" id="spouse-first-name-new" name="family.marriage.spouse.firstName" class="w-full p-2 border rounded-lg bg-white" placeholder="First name" />
                     </div>
                     <div>
                       <label for="spouse-last-name-new" class="block text-sm font-medium text-gray-600 mb-1">Spouse's Last Name</label>
-                      <input type="text" id="spouse-last-name-new" name="family.marriage.spouse.lastName" class="w-full p-2 border rounded-lg" placeholder="Last name" />
+                      <input type="text" id="spouse-last-name-new" name="family.marriage.spouse.lastName" class="w-full p-2 border rounded-lg bg-white" placeholder="Last name" />
                     </div>
                   </div>
 
                   <div>
                     <label for="marriage-date-new" class="block text-sm font-medium text-gray-600 mb-1">Marriage Date</label>
-                    <input type="date" id="marriage-date-new" name="family.marriage.marriageDate" class="w-full p-2 border rounded-lg" />
+                    <input type="date" id="marriage-date-new" name="family.marriage.marriageDate" class="w-full p-2 border rounded-lg bg-white" />
                     <p class="text-xs text-gray-500 mt-1">Years married will be auto-calculated</p>
                   </div>
 
                   <div>
-                    <label for="marriage-location-new" class="block text-sm font-medium text-gray-600 mb-1">Where They Were Married (City, State)</label>
-                    <input type="text" id="marriage-location-new" name="family.marriage.marriageLocation" class="w-full p-2 border rounded-lg" placeholder="e.g., Dallas, Texas" />
-                  </div>
-
-                  <!-- Is Spouse Deceased -->
-                  <div class="border-t pt-4">
-                    <label class="block text-sm font-medium text-gray-600 mb-2">Is the spouse deceased?</label>
-                    <div class="flex gap-4 mb-3">
-                      <label class="flex items-center">
-                        <input type="radio" name="family.marriage.spouse.isDeceased" value="yes" class="mr-2" id="spouse-deceased-yes-new" />
-                        <span class="text-sm font-medium">Yes</span>
-                      </label>
-                      <label class="flex items-center">
-                        <input type="radio" name="family.marriage.spouse.isDeceased" value="no" class="mr-2" id="spouse-deceased-no-new" checked />
-                        <span class="text-sm font-medium">No</span>
-                      </label>
-                    </div>
-
-                    <!-- Spouse Death Date (shown when deceased = yes) -->
-                    <div id="spouse-death-date-container-new" class="hidden mt-3">
-                      <label for="spouse-death-date-new" class="block text-sm font-medium text-gray-600 mb-1">Spouse's Date of Death</label>
-                      <input type="date" id="spouse-death-date-new" name="family.marriage.spouse.deathDate" class="w-full p-2 border rounded-lg" />
-                    </div>
+                    <label for="marriage-location-new" class="block text-sm font-medium text-gray-600 mb-1">Where They Were Married (City, State) - optional</label>
+                    <input type="text" id="marriage-location-new" name="family.marriage.marriageLocation" class="w-full p-2 border rounded-lg bg-white" placeholder="e.g., Dallas, Texas" />
                   </div>
 
                   <div>
-                    <label for="marriage-details-new" class="block text-sm font-medium text-gray-600 mb-1">Optional Marriage Details</label>
-                    <textarea id="marriage-details-new" name="family.marriage.details" rows="3" class="w-full p-2 border rounded-lg" placeholder="Include any special details about their marriage, children from union, etc."></textarea>
+                    <label for="marriage-details-new" class="block text-sm font-medium text-gray-600 mb-1">Additional Details About Spouse/Marriage</label>
+                    <textarea id="marriage-details-new" name="family.marriage.details" rows="3" class="w-full p-2 border rounded-lg bg-white" placeholder="Include any special details about their marriage, spouse, children from union, etc."></textarea>
+                  </div>
+
+                  <!-- Is Spouse Living or Deceased -->
+                  <div class="border-t pt-4">
+                    <label class="block text-sm font-medium text-gray-600 mb-2">Is the spouse living or deceased?</label>
+                    <p class="text-xs text-gray-500 mb-3">This determines how the spouse is mentioned in the obituary (survivors vs. preceded in death)</p>
+                    <div class="flex gap-4 mb-3">
+                      <label class="flex items-center">
+                        <input type="radio" name="family.marriage.spouse.status" value="living" class="mr-2" id="spouse-living-new" checked />
+                        <span class="text-sm font-medium">Living (mention in survivors)</span>
+                      </label>
+                      <label class="flex items-center">
+                        <input type="radio" name="family.marriage.spouse.status" value="deceased" class="mr-2" id="spouse-deceased-new" />
+                        <span class="text-sm font-medium">Deceased (mention in preceded in death)</span>
+                      </label>
+                    </div>
+
+                    <!-- Spouse Death Date (shown when deceased is selected) -->
+                    <div id="spouse-death-date-container-new" class="hidden mt-3 p-3 bg-white rounded-lg border">
+                      <label for="spouse-death-date-new" class="block text-sm font-medium text-gray-600 mb-1">Date Spouse Passed Away</label>
+                      <input type="date" id="spouse-death-date-new" name="family.marriage.spouse.deathDate" class="w-full p-2 border rounded-lg" />
+                    </div>
                   </div>
 
                   <!-- Auto-calculated Years Married Display -->
