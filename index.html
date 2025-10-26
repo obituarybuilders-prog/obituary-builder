@@ -1179,127 +1179,160 @@
             
             <div class="space-y-8">
 
-              <!-- 7) Preceded in Death -->
-              <div class="space-y-4">
-                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Preceded in Death</h3>
+              <!-- 1) MOTHER SECTION -->
+              <div class="space-y-4 p-4 border rounded-lg bg-blue-50">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Mother</h3>
+                
+                <div class="flex gap-4 mb-4">
+                  <label class="flex items-center">
+                    <input type="radio" name="family.mother.status" value="living" class="mr-2" />
+                    <span class="text-sm font-medium">Living</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="family.mother.status" value="deceased" class="mr-2" checked />
+                    <span class="text-sm font-medium">Deceased</span>
+                  </label>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label for="mother-first-name" class="block text-sm font-medium text-gray-600 mb-1">First Name</label>
+                    <input type="text" id="mother-first-name" name="family.mother.firstName" class="w-full p-2 border rounded-lg" placeholder="Mother's first name" />
+                  </div>
+                  <div>
+                    <label for="mother-last-name" class="block text-sm font-medium text-gray-600 mb-1">Last Name</label>
+                    <input type="text" id="mother-last-name" name="family.mother.lastName" class="w-full p-2 border rounded-lg" placeholder="Mother's last name" />
+                  </div>
+                </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-2">Relatives Preceded in Death By</label>
-                  <div id="preceded-container" class="space-y-3">
-                    <div class="preceded-entry p-3 border rounded-lg bg-gray-50">
-                      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                        <input type="text" name="preceded.0.name" class="p-2 border rounded-lg" placeholder="Name" />
-                        <input type="text" name="preceded.0.relationship" class="p-2 border rounded-lg"
-                          placeholder="Relationship" />
-                        <input type="text" name="preceded.0.location" class="p-2 border rounded-lg"
-                          placeholder="City/State (optional)" />
-                      </div>
-                      <button type="button"
-                        class="remove-preceded px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove
-                        Person</button>
-                    </div>
-                  </div>
-                  <button type="button" id="add-preceded"
-                    class="mt-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm">Add
-                    Person</button>
+                  <label for="mother-maiden-name" class="block text-sm font-medium text-gray-600 mb-1">Maiden Name (optional)</label>
+                  <input type="text" id="mother-maiden-name" name="family.mother.maidenName" class="w-full p-2 border rounded-lg" placeholder="Mother's maiden name" />
+                </div>
+
+                <div>
+                  <label for="mother-location" class="block text-sm font-medium text-gray-600 mb-1">Location (City, State) - optional</label>
+                  <input type="text" id="mother-location" name="family.mother.location" class="w-full p-2 border rounded-lg" placeholder="e.g., Birmingham, AL" />
                 </div>
               </div>
 
-              <!-- 8) Surviving Family -->
-              <div class="space-y-4">
-                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Surviving Family</h3>
+              <!-- 2) FATHER SECTION -->
+              <div class="space-y-4 p-4 border rounded-lg bg-green-50">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Father</h3>
+                
+                <div class="flex gap-4 mb-4">
+                  <label class="flex items-center">
+                    <input type="radio" name="family.father.status" value="living" class="mr-2" />
+                    <span class="text-sm font-medium">Living</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="family.father.status" value="deceased" class="mr-2" checked />
+                    <span class="text-sm font-medium">Deceased</span>
+                  </label>
+                </div>
 
-                <!-- Spouse/Marriage Information -->
-                <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label for="father-first-name" class="block text-sm font-medium text-gray-600 mb-1">First Name</label>
+                    <input type="text" id="father-first-name" name="family.father.firstName" class="w-full p-2 border rounded-lg" placeholder="Father's first name" />
+                  </div>
+                  <div>
+                    <label for="father-last-name" class="block text-sm font-medium text-gray-600 mb-1">Last Name</label>
+                    <input type="text" id="father-last-name" name="family.father.lastName" class="w-full p-2 border rounded-lg" placeholder="Father's last name" />
+                  </div>
+                </div>
+
+                <div>
+                  <label for="father-location" class="block text-sm font-medium text-gray-600 mb-1">Location (City, State) - optional</label>
+                  <input type="text" id="father-location" name="family.father.location" class="w-full p-2 border rounded-lg" placeholder="e.g., Birmingham, AL" />
+                </div>
+              </div>
+
+              <!-- 3) MARRIAGE SECTION -->
+              <div class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Marriage</h3>
+                
+                <div>
                   <label class="block text-sm font-medium text-gray-600 mb-2">Was the deceased married?</label>
                   <div class="flex gap-4 mb-4">
                     <label class="flex items-center">
-                      <input type="radio" name="surviving.marriageStatus" value="yes" class="mr-2" id="marriage-yes" />
-                      <span class="text-sm">Yes</span>
+                      <input type="radio" name="family.marriage.wasMarried" value="yes" class="mr-2" id="marriage-yes-new" />
+                      <span class="text-sm font-medium">Yes</span>
                     </label>
                     <label class="flex items-center">
-                      <input type="radio" name="surviving.marriageStatus" value="no" class="mr-2" id="marriage-no" />
-                      <span class="text-sm">No</span>
+                      <input type="radio" name="family.marriage.wasMarried" value="no" class="mr-2" id="marriage-no-new" />
+                      <span class="text-sm font-medium">No</span>
                     </label>
                   </div>
+                </div>
 
-                  <!-- Marriage Details Container (shown when "Yes" is selected) -->
-                  <div id="marriage-details-container" class="hidden space-y-4 p-4 border rounded-lg bg-blue-50">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label for="spouse-name" class="block text-sm font-medium text-gray-600 mb-1">Spouse's Name</label>
-                        <input type="text" id="spouse-name" name="surviving.spouse.name" class="w-full p-2 border rounded-lg" placeholder="Enter spouse's full name" />
-                      </div>
-                      <div>
-                        <label for="marriage-year" class="block text-sm font-medium text-gray-600 mb-1">Year Married</label>
-                        <input type="text" id="marriage-year" name="surviving.spouse.marriageYear" class="w-full p-2 border rounded-lg" placeholder="e.g., 1995" />
-                      </div>
-                    </div>
-
+                <!-- Marriage Details Container (shown when "Yes" is selected) -->
+                <div id="marriage-details-container-new" class="hidden space-y-4 p-4 border rounded-lg bg-pink-50">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label for="marriage-location" class="block text-sm font-medium text-gray-600 mb-1">Where They Were Married (City, State)</label>
-                      <input type="text" id="marriage-location" name="surviving.spouse.marriageLocation" class="w-full p-2 border rounded-lg" placeholder="e.g., Dallas, Texas" />
+                      <label for="spouse-first-name-new" class="block text-sm font-medium text-gray-600 mb-1">Spouse's First Name</label>
+                      <input type="text" id="spouse-first-name-new" name="family.marriage.spouse.firstName" class="w-full p-2 border rounded-lg" placeholder="First name" />
                     </div>
-
                     <div>
-                      <label for="marriage-details" class="block text-sm font-medium text-gray-600 mb-1">Marriage Details (optional)</label>
-                      <textarea id="marriage-details" name="surviving.spouse.marriageDetails" rows="3" class="w-full p-2 border rounded-lg" placeholder="Include any special details about their marriage"></textarea>
+                      <label for="spouse-last-name-new" class="block text-sm font-medium text-gray-600 mb-1">Spouse's Last Name</label>
+                      <input type="text" id="spouse-last-name-new" name="family.marriage.spouse.lastName" class="w-full p-2 border rounded-lg" placeholder="Last name" />
                     </div>
+                  </div>
 
-                    <!-- Spouse Status -->
-                    <div class="border-t pt-4">
-                      <label class="flex items-center mb-3">
-                        <input type="checkbox" id="spouse-deceased" name="surviving.spouse.deceased" class="mr-2" />
-                        <span class="text-sm font-medium text-gray-600">Spouse is Deceased</span>
+                  <div>
+                    <label for="marriage-date-new" class="block text-sm font-medium text-gray-600 mb-1">Marriage Date</label>
+                    <input type="date" id="marriage-date-new" name="family.marriage.marriageDate" class="w-full p-2 border rounded-lg" />
+                    <p class="text-xs text-gray-500 mt-1">Years married will be auto-calculated</p>
+                  </div>
+
+                  <div>
+                    <label for="marriage-location-new" class="block text-sm font-medium text-gray-600 mb-1">Where They Were Married (City, State)</label>
+                    <input type="text" id="marriage-location-new" name="family.marriage.marriageLocation" class="w-full p-2 border rounded-lg" placeholder="e.g., Dallas, Texas" />
+                  </div>
+
+                  <!-- Is Spouse Deceased -->
+                  <div class="border-t pt-4">
+                    <label class="block text-sm font-medium text-gray-600 mb-2">Is the spouse deceased?</label>
+                    <div class="flex gap-4 mb-3">
+                      <label class="flex items-center">
+                        <input type="radio" name="family.marriage.spouse.isDeceased" value="yes" class="mr-2" id="spouse-deceased-yes-new" />
+                        <span class="text-sm font-medium">Yes</span>
                       </label>
+                      <label class="flex items-center">
+                        <input type="radio" name="family.marriage.spouse.isDeceased" value="no" class="mr-2" id="spouse-deceased-no-new" checked />
+                        <span class="text-sm font-medium">No</span>
+                      </label>
+                    </div>
 
-                      <!-- Spouse Death Details (shown when deceased checkbox is checked) -->
-                      <div id="spouse-death-details" class="hidden space-y-3 pl-6 border-l-2 border-gray-300">
-                        <div>
-                          <label for="spouse-death-date" class="block text-sm font-medium text-gray-600 mb-1">Spouse's Date of Death</label>
-                          <input type="date" id="spouse-death-date" name="surviving.spouse.deathDate" class="w-full p-2 border rounded-lg" />
-                        </div>
-                      </div>
+                    <!-- Spouse Death Date (shown when deceased = yes) -->
+                    <div id="spouse-death-date-container-new" class="hidden mt-3">
+                      <label for="spouse-death-date-new" class="block text-sm font-medium text-gray-600 mb-1">Spouse's Date of Death</label>
+                      <input type="date" id="spouse-death-date-new" name="family.marriage.spouse.deathDate" class="w-full p-2 border rounded-lg" />
                     </div>
                   </div>
-                </div>
 
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-2">Parents</label>
-                  <div id="parents-container" class="space-y-3">
-                    <div class="parent-entry p-3 border rounded-lg bg-gray-50">
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-                        <select name="surviving.parents.0.relationship" class="p-2 border rounded-lg bg-white">
-                          <option value="">Relationship</option>
-                          <option value="Mother">Mother</option>
-                          <option value="Father">Father</option>
-                        </select>
-                        <input type="text" name="surviving.parents.0.name" class="p-2 border rounded-lg"
-                          placeholder="Name" />
-                      </div>
-                      <div class="mb-3">
-                        <label class="flex items-center">
-                          <input type="checkbox" name="surviving.parents.0.deceased" class="mr-2 parent-deceased-checkbox" />
-                          <span class="text-sm font-medium text-gray-700">This parent is deceased</span>
-                        </label>
-                      </div>
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-                        <input type="text" name="surviving.parents.0.location" class="p-2 border rounded-lg"
-                          placeholder="Location (City, State)" />
-                        <input type="text" name="surviving.parents.0.spouse" class="p-2 border rounded-lg"
-                          placeholder="Spouse (optional)" />
-                      </div>
-                      <button type="button"
-                        class="remove-parent px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove</button>
-                    </div>
+                  <div>
+                    <label for="marriage-details-new" class="block text-sm font-medium text-gray-600 mb-1">Optional Marriage Details</label>
+                    <textarea id="marriage-details-new" name="family.marriage.details" rows="3" class="w-full p-2 border rounded-lg" placeholder="Include any special details about their marriage, children from union, etc."></textarea>
                   </div>
-                  <button type="button" id="add-parent"
-                    class="mt-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm">Add
-                    Parent</button>
+
+                  <!-- Auto-calculated Years Married Display -->
+                  <div id="years-married-display-new" class="hidden p-3 bg-white border-2 border-green-500 rounded-lg">
+                    <p class="text-sm font-medium text-green-700">
+                      <span class="font-semibold">Years Married:</span> 
+                      <span id="years-married-value-new" class="text-lg">0</span> years
+                    </p>
+                  </div>
                 </div>
+              </div>
+
+              <!-- 4) Surviving Family -->
+              <div class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Surviving Family</h3>
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-2">Siblings</label>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Siblings (Living)</label>
+                  <p class="text-sm text-gray-500 mb-3">List siblings who are still living</p>
                   <div id="siblings-container" class="space-y-3">
                     <div class="sibling-entry p-3 border rounded-lg bg-gray-50">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
@@ -1434,7 +1467,7 @@
                 </div>
               </div>
 
-              <!-- 9) Friends & Special People -->
+              <!-- 5) Friends & Special People -->
               <div class="space-y-4">
                 <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Friends & Special People
                 </h3>
@@ -1482,9 +1515,42 @@
                     Not Asked For</label>
                   <textarea id="other-information" name="additional.otherInformation" rows="6"
                     class="w-full p-2 border rounded-lg"
-                    placeholder="Include any other information, stories, or details that haven't been covered in the sections above"></textarea><small
-                    class="field-instructions">Use this space to share any additional details not covered in the
-                    form.</small>
+                    placeholder="Include any other information, stories, or details that haven't been covered in the sections above"></textarea>
+                  <small class="field-instructions">Use this space to share any additional details not covered in the form.</small>
+                </div>
+              </div>
+
+              <!-- PRECEDED IN DEATH - MOVED TO BOTTOM -->
+              <div class="space-y-4 p-4 border-2 border-yellow-400 rounded-lg bg-yellow-50">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Preceded in Death By (Other Relatives ONLY)</h3>
+                
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 p-3 mb-4">
+                  <p class="text-sm font-semibold text-yellow-800 mb-2">⚠️ IMPORTANT NOTES:</p>
+                  <ul class="text-sm text-yellow-800 space-y-1 ml-4 list-disc">
+                    <li><strong>DO NOT include Mother, Father, or Spouse here</strong> - they are already captured above</li>
+                    <li>This section is for <strong>OTHER relatives ONLY</strong> (siblings, grandparents, aunts, uncles, etc.)</li>
+                    <li>List family members who passed away <strong>before</strong> the deceased</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <div id="preceded-container" class="space-y-3">
+                    <div class="preceded-entry p-3 border rounded-lg bg-white">
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                        <input type="text" name="preceded.0.name" class="p-2 border rounded-lg" placeholder="Name" />
+                        <input type="text" name="preceded.0.relationship" class="p-2 border rounded-lg"
+                          placeholder="Relationship (e.g., Sister, Brother, Grandparent)" />
+                        <input type="text" name="preceded.0.location" class="p-2 border rounded-lg"
+                          placeholder="City/State (optional)" />
+                      </div>
+                      <button type="button"
+                        class="remove-preceded px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove
+                        Person</button>
+                    </div>
+                  </div>
+                  <button type="button" id="add-preceded"
+                    class="mt-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm">Add
+                    Person</button>
                 </div>
               </div>
 
@@ -1548,12 +1614,9 @@
                       <label for="obituary-corrections" class="block text-sm font-medium text-gray-700 mb-2">
                         Need Changes? Describe Your Corrections
                       </label>
-                      <textarea id="obituary-corrections" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Example: Please make the tone more formal, add mention of her love for gardening, change 'passed away' to 'went home to be with the Lord'"></textarea>
-                      
-                      <button type="button" id="regenerate-obituary-btn" class="mt-3 bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700 transition-all duration-200 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
+                      <textarea id="obituary-corrections" rows="4" class="w-full p-3 border rounded-lg"
+                        placeholder="Example: 'Please add that she was a member of the choir' or 'Change the wording about her career'"></textarea>
+                      <button type="button" id="regenerate-obituary-btn" class="mt-2 bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700 transition-all duration-200">
                         Regenerate with Corrections
                       </button>
                     </div>
