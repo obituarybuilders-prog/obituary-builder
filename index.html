@@ -4045,26 +4045,57 @@ DO NOT:
         }
 
         // CRITICAL TONE ENFORCEMENT
-        const tone = formData.additional?.obituaryTone || 'Traditional and Formal';
+        const tone = formData.tone?.style || 'Traditional and Formal';
         prompt += `
 
-**CRITICAL TONE REQUIREMENT - THIS IS MANDATORY:**
-The obituary MUST be written in a "${tone}" tone. This is not optional.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**🚨 CRITICAL TONE REQUIREMENT - ABSOLUTE PRIORITY 🚨**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-TONE DEFINITIONS:
-- Traditional and Formal: Professional, respectful, conventional language, formal structure
-- Warm and Personal: Intimate, conversational, heartfelt, like a family member speaking
-- Celebratory and Uplifting: Joyful, positive, emphasizing life's celebrations and achievements
-- Spiritual and Faith-Centered: Religious language, Bible references, faith journey emphasis, eternal perspective
-- Simple and Straightforward: Direct, clear, minimal embellishment, easy to read
+**SELECTED TONE: "${tone}"**
 
-**The selected tone ("${tone}") must be CLEARLY EVIDENT in:**
-- Word choice and vocabulary
-- Sentence structure and flow
-- Overall feeling and emotion
-- How information is presented
+This tone is MANDATORY and takes precedence over everything else. The obituary MUST be completely rewritten in this tone if regenerating.
 
-If regenerating with a new tone, ensure the tone change is SIGNIFICANT and OBVIOUS.
+TONE DEFINITIONS AND REQUIREMENTS:
+
+1. **Traditional and Formal**
+   - Use: Professional, respectful, conventional language
+   - Structure: Formal chronological narrative
+   - Voice: Third person, dignified, reserved
+   - Example phrases: "passed away peacefully," "devoted to," "beloved"
+
+2. **Warm and Personal**
+   - Use: Intimate, conversational, heartfelt language
+   - Structure: Story-like, as if family is speaking
+   - Voice: Personal anecdotes, emotional connection
+   - Example phrases: "loved spending time with," "made everyone smile," "will be deeply missed"
+
+3. **Celebratory and Uplifting**
+   - Use: Joyful, positive, life-affirming language
+   - Structure: Focus on achievements and happy memories
+   - Voice: Upbeat, emphasizing celebration over loss
+   - Example phrases: "celebrated life," "brought joy," "legacy of laughter"
+
+4. **Spiritual and Faith-Centered**
+   - Use: Religious language, scripture references, eternal perspective
+   - Structure: Faith journey prominent, heaven/afterlife mentioned
+   - Voice: Reverent, hope-filled, gospel-centered
+   - Example phrases: "accepted Christ," "now with the Lord," "faith sustained," "heavenly home"
+
+5. **Simple and Straightforward**
+   - Use: Direct, clear, uncomplicated language
+   - Structure: Brief paragraphs, easy to follow
+   - Voice: Matter-of-fact but respectful, no flowery language
+   - Example phrases: "was born," "worked as," "is survived by"
+
+**MANDATORY TONE APPLICATION FOR "${tone}":**
+- EVERY sentence must reflect this tone
+- Word choice MUST match the tone definition above
+- If regenerating, the difference from previous version must be DRAMATIC
+- The reader should immediately recognize the tone selected
+
+⚠️ **REGENERATION REQUIREMENT:**
+If this is a regeneration with a DIFFERENT tone than before, you MUST completely rewrite the obituary. Do NOT just make minor tweaks. The tone change must be OBVIOUS and SIGNIFICANT. Every paragraph should feel different.
 `;
 
         return prompt;
