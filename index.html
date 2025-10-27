@@ -17,6 +17,9 @@
   <!-- Cropper.js for Photo Editing -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+  <!-- jsPDF for PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     body {
       font-family: "Merriweather", serif;
@@ -251,6 +254,33 @@
       outline: 2px solid #b00020;
       outline-offset: 2px;
     }
+
+    #step-indicator {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: white;
+      border-bottom: 2px solid #e5e7eb;
+      padding: 1rem 0;
+      margin-bottom: 1.5rem;
+    }
+
+    .pdf-preview-container {
+      background: #f3f4f6;
+      padding: 2rem;
+      border-radius: 0.5rem;
+      margin-top: 2rem;
+    }
+
+    .pdf-page {
+      background: white;
+      width: 8.5in;
+      height: 11in;
+      margin: 0 auto 2rem;
+      padding: 1in;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      page-break-after: always;
+    }
   </style>
 
 </head>
@@ -398,6 +428,15 @@
             <button type="button" id="form-back-to-dashboard" class="text-sm text-gray-600 hover:text-indigo-600">&larr;
               Back to Dashboard</button>
           </div>
+          
+          <!-- Step Indicator -->
+          <div id="step-indicator" class="mb-6">
+            <div class="text-center">
+              <h2 class="text-xl font-bold text-gray-800" id="current-step-title">Step 1: Front Cover Details</h2>
+              <p class="text-sm text-gray-600 mt-1" id="step-count-display">Step 1 of 6</p>
+            </div>
+          </div>
+          
           <div class="mb-8">
             <div class="flex justify-end mb-1">
               <span id="step-counter" class="text-sm font-medium text-indigo-700"></span>
@@ -1705,11 +1744,67 @@
               <button type="button" class="prev-button bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700">Previous</button>
               <div>
                 <button type="button" class="save-progress-button bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Save</button>
-                <button type="button" class="next-button bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700 ml-2">Finish</button>
+                <button type="button" class="next-button bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700 ml-2">Next</button>
               </div>
             </div>
           </div>
+
+          <!-- Step 6: Program Back Cover -->
+          <div id="step-6" class="form-step">
+            <h2 class="text-xl font-semibold mb-6 text-gray-700 border-b pb-3">Program Back Cover</h2>
+            
+            <div class="space-y-6">
+              <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
+                <p class="text-sm text-gray-700">
+                  <strong>Back Cover Content:</strong> This is the final page of your funeral program. You can add a poem, scripture, acknowledgments, thank you message, or any other content you'd like to include.
+                </p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-2">Back Cover Content</label>
+                <textarea id="back-cover-content" name="backCover.content" rows="12"
+                          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white"
+                          placeholder="Enter your back cover content here... (poem, scripture, acknowledgments, etc.)"></textarea>
+                <p class="text-xs text-gray-500 mt-1">This text will appear on the back page of your program.</p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-2">Upload Image (Optional)</label>
+                <input type="file" id="back-cover-image" name="backCover.image" accept="image/*"
+                       class="w-full p-3 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
+                <p class="text-xs text-gray-500 mt-1">Add an optional image for the back cover (e.g., dove, cross, flowers).</p>
+              </div>
+            </div>
+
+            <div class="mt-8 flex justify-between">
+              <button type="button" class="prev-button bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700">Previous</button>
+              <div>
+                <button type="button" class="save-progress-button bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Save</button>
+                <button type="button" id="finished-button" class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 ml-2">Finished</button>
+              </div>
+            </div>
+          </div>
+
         </form>
+
+        <!-- Download PDF Section (Hidden until finished) -->
+        <div id="download-section" class="hidden mt-8 bg-gradient-to-br from-green-50 to-blue-50 p-8 rounded-xl border-2 border-green-200 text-center">
+          <div class="mb-6">
+            <svg class="mx-auto h-16 w-16 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-800 mb-3">Your Program is Ready!</h3>
+          <p class="text-gray-600 mb-6">Click the button below to download your 4-page funeral program as a PDF.</p>
+          <button type="button" id="download-pdf-button" 
+                  class="px-8 py-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold text-lg shadow-lg inline-flex items-center gap-2">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Download PDF
+          </button>
+        </div>
+
       </div>
     </div>
     <div id="photo-editor-modal" class="photo-editor-modal hidden">
@@ -2759,6 +2854,28 @@
         document.querySelectorAll('.next-button').forEach(btn => btn.addEventListener('click', () => this.goToNextStep()));
         document.querySelectorAll('.prev-button').forEach(btn => btn.addEventListener('click', () => this.goToPrevStep()));
         document.querySelectorAll('.save-progress-button').forEach(btn => btn.addEventListener('click', () => this.saveProgress()));
+        
+        // Bind finished button
+        const finishedBtn = document.getElementById('finished-button');
+        if (finishedBtn) {
+          finishedBtn.addEventListener('click', () => this.handleFinished());
+        }
+        
+        // Bind download PDF button
+        const downloadBtn = document.getElementById('download-pdf-button');
+        if (downloadBtn) {
+          downloadBtn.addEventListener('click', () => this.generatePDF());
+        }
+        
+        // Define step titles
+        this.stepTitles = {
+          1: "Front Cover Details",
+          2: "Life Story Information",
+          3: "Professional Life",
+          4: "Faith & Community",
+          5: "Order of Service",
+          6: "Program Back Cover"
+        };
       },
 
       goToNextStep() {
@@ -2807,6 +2924,133 @@
         const progress = this.totalSteps > 1 ? (this.currentStep - 1) / (this.totalSteps - 1) * 100 : 0;
         document.getElementById('progress-bar').style.width = `${progress}%`;
         document.getElementById('step-counter').textContent = `Step ${this.currentStep} of ${this.totalSteps}`;
+        
+        // Update step indicator
+        const stepTitle = this.stepTitles[this.currentStep] || "Step";
+        document.getElementById('current-step-title').textContent = `Step ${this.currentStep}: ${stepTitle}`;
+        document.getElementById('step-count-display').textContent = `Step ${this.currentStep} of ${this.totalSteps}`;
+      },
+
+      handleFinished() {
+        // Hide the form and show the download section
+        document.getElementById('obituary-form').classList.add('hidden');
+        document.getElementById('step-indicator').classList.add('hidden');
+        document.getElementById('download-section').classList.remove('hidden');
+        
+        // Scroll to download section
+        document.getElementById('download-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      },
+
+      async generatePDF() {
+        try {
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'in',
+            format: 'letter'
+          });
+
+          const formData = this.getFormData();
+          
+          // Page 1: Basic Information (Front Cover)
+          pdf.setFontSize(16);
+          pdf.text('In Loving Memory', 4.25, 1.5, { align: 'center' });
+          
+          pdf.setFontSize(14);
+          const fullName = formData.frontCover?.fullName || 'Name';
+          pdf.text(fullName, 4.25, 2, { align: 'center' });
+          
+          pdf.setFontSize(11);
+          const dob = this.formatDate(formData.frontCover?.dob) || '';
+          const dop = this.formatDate(formData.frontCover?.dop) || '';
+          pdf.text(`${dob} - ${dop}`, 4.25, 2.5, { align: 'center' });
+
+          // Add service details
+          pdf.setFontSize(10);
+          let yPos = 3.5;
+          
+          if (formData.frontCover?.service?.dateRaw) {
+            const serviceDate = this.formatDate(formData.frontCover.service.dateRaw);
+            const serviceTime = formData.frontCover.service?.timeStandard || '';
+            pdf.text(`Service: ${serviceDate} at ${serviceTime}`, 4.25, yPos, { align: 'center' });
+            yPos += 0.3;
+          }
+          
+          if (formData.frontCover?.venue?.name) {
+            pdf.text(formData.frontCover.venue.name, 4.25, yPos, { align: 'center' });
+            yPos += 0.3;
+            
+            if (formData.frontCover.venue.street) {
+              pdf.text(formData.frontCover.venue.street, 4.25, yPos, { align: 'center' });
+              yPos += 0.3;
+            }
+            
+            const cityStateZip = [
+              formData.frontCover.venue.city,
+              formData.frontCover.venue.state,
+              formData.frontCover.venue.zip
+            ].filter(Boolean).join(', ');
+            
+            if (cityStateZip) {
+              pdf.text(cityStateZip, 4.25, yPos, { align: 'center' });
+              yPos += 0.3;
+            }
+          }
+
+          // Page 2: Obituary
+          pdf.addPage();
+          pdf.setFontSize(14);
+          pdf.text('Obituary', 4.25, 1, { align: 'center' });
+          
+          pdf.setFontSize(10);
+          const obituary = formData.generatedObituary || 'No obituary text provided.';
+          const splitObituary = pdf.splitTextToSize(obituary, 6.5);
+          pdf.text(splitObituary, 1, 1.5);
+
+          // Page 3: Order of Service
+          pdf.addPage();
+          pdf.setFontSize(14);
+          pdf.text('Order of Service', 4.25, 1, { align: 'center' });
+          
+          pdf.setFontSize(10);
+          yPos = 1.5;
+          
+          const serviceItems = document.querySelectorAll('.service-item');
+          serviceItems.forEach((item, index) => {
+            const itemName = item.querySelector('input[name*=".itemName"]')?.value || 'Untitled';
+            const personName = item.querySelector('input[name*=".personName"]')?.value || '';
+            const additionalInfo = item.querySelector('input[name*=".additionalInfo"]')?.value || '';
+            
+            let text = `${index + 1}. ${itemName}`;
+            if (personName) text += ` - ${personName}`;
+            if (additionalInfo) text += ` (${additionalInfo})`;
+            
+            const splitText = pdf.splitTextToSize(text, 6.5);
+            pdf.text(splitText, 1, yPos);
+            yPos += 0.3 * splitText.length;
+            
+            if (yPos > 10) {
+              pdf.addPage();
+              yPos = 1;
+            }
+          });
+
+          // Page 4: Back Cover
+          pdf.addPage();
+          pdf.setFontSize(10);
+          const backCover = formData.backCover?.content || '';
+          const splitBackCover = pdf.splitTextToSize(backCover, 6.5);
+          pdf.text(splitBackCover, 1, 1.5);
+
+          // Save the PDF
+          const fileName = `${fullName.replace(/\s+/g, '_')}_Program.pdf`;
+          pdf.save(fileName);
+          
+          this.notify('PDF downloaded successfully!', 'success');
+        } catch (error) {
+          console.error('Error generating PDF:', error);
+          this.notify('There was an error generating the PDF. Please try again.', 'error');
+        }
       },
 
       getFormData() {
