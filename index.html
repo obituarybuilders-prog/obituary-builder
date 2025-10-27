@@ -264,23 +264,6 @@
       padding: 1rem 0;
       margin-bottom: 1.5rem;
     }
-
-    .pdf-preview-container {
-      background: #f3f4f6;
-      padding: 2rem;
-      border-radius: 0.5rem;
-      margin-top: 2rem;
-    }
-
-    .pdf-page {
-      background: white;
-      width: 8.5in;
-      height: 11in;
-      margin: 0 auto 2rem;
-      padding: 1in;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      page-break-after: always;
-    }
   </style>
 
 </head>
@@ -2926,19 +2909,32 @@
         document.getElementById('step-counter').textContent = `Step ${this.currentStep} of ${this.totalSteps}`;
         
         // Update step indicator
-        const stepTitle = this.stepTitles[this.currentStep] || "Step";
-        document.getElementById('current-step-title').textContent = `Step ${this.currentStep}: ${stepTitle}`;
-        document.getElementById('step-count-display').textContent = `Step ${this.currentStep} of ${this.totalSteps}`;
+        if (this.stepTitles && this.stepTitles[this.currentStep]) {
+          const stepTitle = this.stepTitles[this.currentStep];
+          const titleEl = document.getElementById('current-step-title');
+          const countEl = document.getElementById('step-count-display');
+          if (titleEl) titleEl.textContent = `Step ${this.currentStep}: ${stepTitle}`;
+          if (countEl) countEl.textContent = `Step ${this.currentStep} of ${this.totalSteps}`;
+        }
       },
 
       handleFinished() {
+        // Save progress first
+        this.saveProgress();
+        
         // Hide the form and show the download section
-        document.getElementById('obituary-form').classList.add('hidden');
-        document.getElementById('step-indicator').classList.add('hidden');
-        document.getElementById('download-section').classList.remove('hidden');
+        const form = document.getElementById('obituary-form');
+        const indicator = document.getElementById('step-indicator');
+        const downloadSection = document.getElementById('download-section');
+        
+        if (form) form.classList.add('hidden');
+        if (indicator) indicator.classList.add('hidden');
+        if (downloadSection) downloadSection.classList.remove('hidden');
         
         // Scroll to download section
-        document.getElementById('download-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (downloadSection) {
+          downloadSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       },
 
       async generatePDF() {
@@ -2952,7 +2948,7 @@
 
           const formData = this.getFormData();
           
-          // Page 1: Basic Information (Front Cover)
+          // Page 1: Basic Information
           pdf.setFontSize(16);
           pdf.text('In Loving Memory', 4.25, 1.5, { align: 'center' });
           
@@ -2979,22 +2975,6 @@
           if (formData.frontCover?.venue?.name) {
             pdf.text(formData.frontCover.venue.name, 4.25, yPos, { align: 'center' });
             yPos += 0.3;
-            
-            if (formData.frontCover.venue.street) {
-              pdf.text(formData.frontCover.venue.street, 4.25, yPos, { align: 'center' });
-              yPos += 0.3;
-            }
-            
-            const cityStateZip = [
-              formData.frontCover.venue.city,
-              formData.frontCover.venue.state,
-              formData.frontCover.venue.zip
-            ].filter(Boolean).join(', ');
-            
-            if (cityStateZip) {
-              pdf.text(cityStateZip, 4.25, yPos, { align: 'center' });
-              yPos += 0.3;
-            }
           }
 
           // Page 2: Obituary
@@ -3025,9 +3005,8 @@
             if (personName) text += ` - ${personName}`;
             if (additionalInfo) text += ` (${additionalInfo})`;
             
-            const splitText = pdf.splitTextToSize(text, 6.5);
-            pdf.text(splitText, 1, yPos);
-            yPos += 0.3 * splitText.length;
+            pdf.text(text, 1, yPos);
+            yPos += 0.3;
             
             if (yPos > 10) {
               pdf.addPage();
