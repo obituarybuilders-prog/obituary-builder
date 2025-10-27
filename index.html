@@ -251,16 +251,6 @@
       outline: 2px solid #b00020;
       outline-offset: 2px;
     }
-
-    #step-indicator {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      background: white;
-      border-bottom: 2px solid #e5e7eb;
-      padding: 1rem 0;
-      margin-bottom: 1.5rem;
-    }
   </style>
 
 </head>
@@ -408,15 +398,6 @@
             <button type="button" id="form-back-to-dashboard" class="text-sm text-gray-600 hover:text-indigo-600">&larr;
               Back to Dashboard</button>
           </div>
-          
-          <!-- Step Indicator -->
-          <div id="step-indicator" class="mb-6">
-            <div class="text-center">
-              <h2 class="text-xl font-bold text-gray-800" id="current-step-title">Step 1: Front Cover Details</h2>
-              <p class="text-sm text-gray-600 mt-1" id="step-count-display">Step 1 of 6</p>
-            </div>
-          </div>
-          
           <div class="mb-8">
             <div class="flex justify-end mb-1">
               <span id="step-counter" class="text-sm font-medium text-indigo-700"></span>
@@ -1729,48 +1710,234 @@
             </div>
           </div>
 
-          <!-- Step 6: Back Cover Details (Roles & Acknowledgment) -->
+          <!-- Step 6: Back Cover -->
           <div id="step-6" class="form-step">
-            <h2 class="text-xl font-semibold mb-6 text-gray-700 border-b pb-3">Back Cover Details (Roles & Acknowledgment)</h2>
+            <h2 class="text-xl font-semibold mb-6 text-gray-700 border-b pb-3">Back Cover</h2>
             
+            <p class="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-200 mb-6">
+              <strong>Instructions:</strong> All information on the back cover is typically centered. Fill in the sections below. The acknowledgment and special thanks can be AI-generated or manually entered.
+            </p>
+
             <div class="space-y-8">
-              
-              <!-- Assignments Section -->
-              <div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Assignments</h3>
-                <p class="text-sm text-gray-600 mb-4">
-                  Add roles and assignments for the back cover of the program (e.g., Pallbearers, Flower Bearers).
-                </p>
+
+              <!-- 1) PALLBEARERS -->
+              <div class="space-y-4 p-4 border rounded-lg bg-gray-50">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2 text-center">Pallbearers</h3>
                 
-                <div id="assignments-list" class="space-y-3 mb-4">
-                  <!-- Default first row will be added by JavaScript -->
+                <div id="pallbearers-container" class="space-y-2">
+                  <div class="pallbearer-entry">
+                    <input type="text" name="backCover.pallbearers.0" class="w-full p-2 border rounded-lg bg-white text-center" placeholder="Enter name" />
+                  </div>
                 </div>
-                
-                <button type="button" id="add-assignment-row" 
-                        class="w-full py-2 px-4 bg-indigo-100 text-indigo-700 font-semibold rounded-lg hover:bg-indigo-200 transition-all duration-200">
-                  + Add Assignment
+                <button type="button" id="add-pallbearer" class="w-full py-2 px-4 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm font-medium">
+                  + Add Pallbearer
                 </button>
               </div>
 
-              <!-- Family Acknowledgment Section -->
-              <div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Family Acknowledgment</h3>
-                <p class="text-sm text-gray-600 mb-4">
-                  Write or generate a message of thanks from the family.
-                </p>
+              <!-- 2) FLOWER BEARERS -->
+              <div class="space-y-4 p-4 border rounded-lg bg-gray-50">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2 text-center">Flower Bearers</h3>
                 
-                <div class="mb-4">
-                  <label class="block text-sm font-medium text-gray-600 mb-2">Acknowledgment Message</label>
-                  <textarea id="acknowledgment-textarea" name="backCover.acknowledgment" rows="6"
-                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white"
-                            placeholder="Enter your acknowledgment message here..."></textarea>
-                  <p class="text-xs text-gray-500 mt-1">This message will appear on the back cover.</p>
+                <div id="flower-bearers-container" class="space-y-2">
+                  <div class="flower-bearer-entry">
+                    <input type="text" name="backCover.flowerBearers.0" class="w-full p-2 border rounded-lg bg-white text-center" placeholder="Enter name" />
+                  </div>
                 </div>
-                
-                <button type="button" id="generate-ack-btn" 
-                        class="gemini-button px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-all duration-200">
-                  Generate Acknowledgment with AI
+                <button type="button" id="add-flower-bearer" class="w-full py-2 px-4 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm font-medium">
+                  + Add Flower Bearer
                 </button>
+              </div>
+
+              <!-- 3) INTERMENT -->
+              <div class="space-y-4 p-4 border rounded-lg bg-green-50">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2 text-center">Interment</h3>
+                <input type="text" name="backCover.interment" class="w-full p-2 border rounded-lg bg-white text-center" placeholder="e.g., Oakland Memorial Gardens" />
+              </div>
+
+              <!-- 4) FINAL CARE ENTRUSTED TO -->
+              <div class="space-y-4 p-4 border rounded-lg bg-purple-50">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2 text-center">Final Care Entrusted To</h3>
+                <div class="space-y-3">
+                  <input type="text" name="backCover.finalCare.name" class="w-full p-2 border rounded-lg bg-white text-center" placeholder="e.g., Serenity Chapel" />
+                  <input type="text" name="backCover.finalCare.address" class="w-full p-2 border rounded-lg bg-white text-center" placeholder="Street Address" />
+                  <input type="text" name="backCover.finalCare.cityStateZip" class="w-full p-2 border rounded-lg bg-white text-center" placeholder="City, State Zip" />
+                  <input type="text" name="backCover.finalCare.phone" class="w-full p-2 border rounded-lg bg-white text-center" placeholder="Phone Number (optional)" />
+                </div>
+              </div>
+
+              <!-- 5) ADDITIONAL ORGANIZATIONS/GROUPS -->
+              <div class="space-y-4 p-4 border rounded-lg bg-yellow-50">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2 text-center">Additional Organizations/Groups</h3>
+                <p class="text-xs text-gray-600 text-center mb-3">e.g., Church ministries, clubs, or organizations to acknowledge</p>
+                
+                <div id="organizations-container" class="space-y-2">
+                  <div class="organization-entry">
+                    <input type="text" name="backCover.organizations.0" class="w-full p-2 border rounded-lg bg-white text-center" placeholder="e.g., Hostess Ministry" />
+                  </div>
+                </div>
+                <button type="button" id="add-organization" class="w-full py-2 px-4 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-sm font-medium">
+                  + Add Organization
+                </button>
+              </div>
+
+              <!-- 6) ACKNOWLEDGMENT FROM THE FAMILY -->
+              <div class="space-y-4 p-4 border-2 border-indigo-300 rounded-lg bg-indigo-50">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-indigo-300 pb-2 text-center">Acknowledgment from the Family</h3>
+                
+                <div class="bg-indigo-100 border-l-4 border-indigo-500 p-3 mb-4">
+                  <p class="text-sm font-semibold text-indigo-800 mb-2">📝 AI-Generated or Manual Entry</p>
+                  <p class="text-xs text-indigo-700">Choose to use a generic template, write your own, or let AI create a personalized acknowledgment based on your input.</p>
+                </div>
+
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Choose an option:</label>
+                  <div class="space-y-2">
+                    <label class="flex items-center p-3 border rounded-lg bg-white hover:bg-gray-50 cursor-pointer">
+                      <input type="radio" name="backCover.acknowledgment.type" value="generic" class="mr-3" id="acknowledgment-generic" checked />
+                      <div>
+                        <span class="font-medium text-gray-800">Generic Template</span>
+                        <p class="text-xs text-gray-600">Standard acknowledgment with the deceased's name automatically inserted</p>
+                      </div>
+                    </label>
+                    <label class="flex items-center p-3 border rounded-lg bg-white hover:bg-gray-50 cursor-pointer">
+                      <input type="radio" name="backCover.acknowledgment.type" value="manual" class="mr-3" id="acknowledgment-manual" />
+                      <div>
+                        <span class="font-medium text-gray-800">Write Your Own</span>
+                        <p class="text-xs text-gray-600">Manually write the complete acknowledgment</p>
+                      </div>
+                    </label>
+                    <label class="flex items-center p-3 border rounded-lg bg-white hover:bg-gray-50 cursor-pointer">
+                      <input type="radio" name="backCover.acknowledgment.type" value="ai" class="mr-3" id="acknowledgment-ai" />
+                      <div>
+                        <span class="font-medium text-gray-800">AI-Generated</span>
+                        <p class="text-xs text-gray-600">Let AI create a personalized acknowledgment based on your details</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div id="acknowledgment-generic-preview" class="bg-white p-4 rounded-lg border-2 border-green-200">
+                  <p class="text-sm text-gray-700 text-center italic leading-relaxed">
+                    "With deep and heartfelt appreciation, the family of <strong id="deceased-name-placeholder">[Deceased's Name]</strong> would like to express our sincere thanks to everyone for your calls, text messages, visits, acts of kindness, and words of encouragement during this difficult time. Your support has been a tremendous source of strength and comfort."
+                  </p>
+                  <p class="text-xs text-gray-500 text-center mt-2">✓ Deceased's name will be automatically inserted</p>
+                </div>
+
+                <div id="acknowledgment-manual-container" class="hidden">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Write Your Acknowledgment:</label>
+                  <textarea id="acknowledgment-manual-text" name="backCover.acknowledgment.manualText" rows="6" class="w-full p-3 border rounded-lg bg-white" placeholder="Write your complete acknowledgment here..."></textarea>
+                </div>
+
+                <div id="acknowledgment-ai-container" class="hidden space-y-3">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">What would you like to include in the acknowledgment?</label>
+                  <textarea id="acknowledgment-ai-prompt" name="backCover.acknowledgment.aiPrompt" rows="4" class="w-full p-3 border rounded-lg bg-white" placeholder="Example: Thank everyone for their support, mention Hope Hospice for their care, acknowledge Pastor Bailey and church family, mention prayers during difficult time"></textarea>
+                  
+                  <button type="button" id="generate-acknowledgment-btn" class="w-full py-3 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all duration-200 flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    Generate Acknowledgment with AI
+                  </button>
+
+                  <div id="acknowledgment-ai-result" class="hidden mt-4 p-4 bg-white rounded-lg border-2 border-green-200">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-2">AI-Generated Acknowledgment:</h4>
+                    <div id="acknowledgment-ai-text" class="text-sm text-gray-700 text-center italic leading-relaxed"></div>
+                    <div class="mt-3 flex gap-2">
+                      <button type="button" id="regenerate-acknowledgment-btn" class="flex-1 py-2 px-4 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 text-sm font-medium">
+                        Regenerate
+                      </button>
+                      <button type="button" id="use-acknowledgment-btn" class="flex-1 py-2 px-4 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-sm font-medium">
+                        ✓ Use This
+                      </button>
+                    </div>
+                  </div>
+
+                  <div id="acknowledgment-loading" class="hidden mt-4 text-center">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    <p class="text-sm text-gray-600 mt-2">Generating acknowledgment...</p>
+                  </div>
+                </div>
+
+                <input type="hidden" name="backCover.acknowledgment.finalText" id="acknowledgment-final-text" />
+              </div>
+
+              <!-- 7) SPECIAL THANKS -->
+              <div class="space-y-4 p-4 border-2 border-pink-300 rounded-lg bg-pink-50">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-pink-300 pb-2 text-center">Special Thanks</h3>
+                
+                <div class="bg-pink-100 border-l-4 border-pink-500 p-3 mb-4">
+                  <p class="text-sm font-semibold text-pink-800 mb-2">💝 AI-Generated or Manual Entry</p>
+                  <p class="text-xs text-pink-700">Add special thanks to specific people, organizations, or groups. AI can help you create a heartfelt message.</p>
+                </div>
+
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Choose an option:</label>
+                  <div class="space-y-2">
+                    <label class="flex items-center p-3 border rounded-lg bg-white hover:bg-gray-50 cursor-pointer">
+                      <input type="radio" name="backCover.specialThanks.type" value="manual" class="mr-3" id="special-thanks-manual" checked />
+                      <div>
+                        <span class="font-medium text-gray-800">Write Your Own</span>
+                        <p class="text-xs text-gray-600">Manually write your special thanks message</p>
+                      </div>
+                    </label>
+                    <label class="flex items-center p-3 border rounded-lg bg-white hover:bg-gray-50 cursor-pointer">
+                      <input type="radio" name="backCover.specialThanks.type" value="ai" class="mr-3" id="special-thanks-ai" />
+                      <div>
+                        <span class="font-medium text-gray-800">AI-Generated</span>
+                        <p class="text-xs text-gray-600">Let AI create a personalized special thanks message</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div id="special-thanks-manual-container">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Write Your Special Thanks:</label>
+                  <textarea id="special-thanks-manual-text" name="backCover.specialThanks.manualText" rows="5" class="w-full p-3 border rounded-lg bg-white" placeholder="Example: Thank you, Pastor Florence G. Bailey and The Temple Light Family of Ministries for all of your love and support during this time."></textarea>
+                </div>
+
+                <div id="special-thanks-ai-container" class="hidden space-y-3">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Who or what would you like to give special thanks to?</label>
+                  <textarea id="special-thanks-ai-prompt" name="backCover.specialThanks.aiPrompt" rows="4" class="w-full p-3 border rounded-lg bg-white" placeholder="Example: Pastor Bailey and church family, Hope Hospice for their compassionate care, friends who visited, nurses at the hospital"></textarea>
+                  
+                  <button type="button" id="generate-special-thanks-btn" class="w-full py-3 px-4 bg-pink-600 text-white font-semibold rounded-lg hover:bg-pink-700 transition-all duration-200 flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    Generate Special Thanks with AI
+                  </button>
+
+                  <div id="special-thanks-ai-result" class="hidden mt-4 p-4 bg-white rounded-lg border-2 border-green-200">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-2">AI-Generated Special Thanks:</h4>
+                    <div id="special-thanks-ai-text" class="text-sm text-gray-700 text-center italic leading-relaxed"></div>
+                    <div class="mt-3 flex gap-2">
+                      <button type="button" id="regenerate-special-thanks-btn" class="flex-1 py-2 px-4 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 text-sm font-medium">
+                        Regenerate
+                      </button>
+                      <button type="button" id="use-special-thanks-btn" class="flex-1 py-2 px-4 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-sm font-medium">
+                        ✓ Use This
+                      </button>
+                    </div>
+                  </div>
+
+                  <div id="special-thanks-loading" class="hidden mt-4 text-center">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-pink-600"></div>
+                    <p class="text-sm text-gray-600 mt-2">Generating special thanks...</p>
+                  </div>
+                </div>
+
+                <input type="hidden" name="backCover.specialThanks.finalText" id="special-thanks-final-text" />
+              </div>
+
+              <!-- 8) PROGRAM DESIGNED BY -->
+              <div class="space-y-4 p-4 border rounded-lg bg-gray-50">
+                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2 text-center">Program Designed By</h3>
+                <p class="text-xs text-gray-600 text-center mb-3">Optional: Credit the designer or printing company</p>
+                
+                <div class="space-y-3">
+                  <input type="text" name="backCover.designedBy.name" class="w-full p-2 border rounded-lg bg-white text-center" placeholder="e.g., ALAN & Associates, LLC" />
+                  <input type="text" name="backCover.designedBy.description" class="w-full p-2 border rounded-lg bg-white text-center" placeholder="e.g., Alabama's Graphics & Marketing Professionals" />
+                  <input type="text" name="backCover.designedBy.phone" class="w-full p-2 border rounded-lg bg-white text-center" placeholder="Phone Number (optional)" />
+                </div>
               </div>
 
             </div>
@@ -1779,11 +1946,10 @@
               <button type="button" class="prev-button bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700">Previous</button>
               <div>
                 <button type="button" class="save-progress-button bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Save</button>
-                <button type="button" class="next-button bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 ml-2">Finish</button>
+                <button type="button" id="finish-button" class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 ml-2">Finish & Generate PDF</button>
               </div>
             </div>
           </div>
-
         </form>
       </div>
     </div>
@@ -2130,7 +2296,7 @@
         this.bindFormattingHandlers();
         this.setupObituaryGeneration();
         this.initOrderOfService();
-        this.initStep6BackCover();
+        this.initBackCover();
       },
 
       bindFormattingHandlers() {
@@ -2835,16 +3001,6 @@
         document.querySelectorAll('.next-button').forEach(btn => btn.addEventListener('click', () => this.goToNextStep()));
         document.querySelectorAll('.prev-button').forEach(btn => btn.addEventListener('click', () => this.goToPrevStep()));
         document.querySelectorAll('.save-progress-button').forEach(btn => btn.addEventListener('click', () => this.saveProgress()));
-        
-        // Define step titles
-        this.stepTitles = {
-          1: "Front Cover Details",
-          2: "Life Story Information",
-          3: "Professional Life",
-          4: "Faith & Community",
-          5: "Order of Service",
-          6: "Back Cover Details (Roles & Acknowledgment)"
-        };
       },
 
       goToNextStep() {
@@ -2893,15 +3049,6 @@
         const progress = this.totalSteps > 1 ? (this.currentStep - 1) / (this.totalSteps - 1) * 100 : 0;
         document.getElementById('progress-bar').style.width = `${progress}%`;
         document.getElementById('step-counter').textContent = `Step ${this.currentStep} of ${this.totalSteps}`;
-        
-        // Update step indicator
-        if (this.stepTitles && this.stepTitles[this.currentStep]) {
-          const stepTitle = this.stepTitles[this.currentStep];
-          const titleEl = document.getElementById('current-step-title');
-          const countEl = document.getElementById('step-count-display');
-          if (titleEl) titleEl.textContent = `Step ${this.currentStep}: ${stepTitle}`;
-          if (countEl) countEl.textContent = `Step ${this.currentStep} of ${this.totalSteps}`;
-        }
       },
 
       getFormData() {
@@ -4190,215 +4337,482 @@ DO NOT:
         });
       },
 
-      initStep6BackCover() {
-        const container = document.getElementById('assignments-list');
-        if (!container) return;
+      // ========== STEP 6: BACK COVER ==========
+      
+      initBackCover() {
+        // Add pallbearers
+        document.getElementById('add-pallbearer')?.addEventListener('click', () => {
+          this.addBackCoverItem('pallbearers', 'pallbearers-container', 'Enter name');
+        });
 
-        // Create first default row
-        this.addAssignmentRow();
+        // Add flower bearers
+        document.getElementById('add-flower-bearer')?.addEventListener('click', () => {
+          this.addBackCoverItem('flowerBearers', 'flower-bearers-container', 'Enter name');
+        });
 
-        // Bind add button
-        const addBtn = document.getElementById('add-assignment-row');
-        if (addBtn) {
-          addBtn.addEventListener('click', () => this.addAssignmentRow());
-        }
+        // Add organizations
+        document.getElementById('add-organization')?.addEventListener('click', () => {
+          this.addBackCoverItem('organizations', 'organizations-container', 'e.g., Hostess Ministry');
+        });
 
-        // Bind AI generate button
-        const generateBtn = document.getElementById('generate-ack-btn');
-        if (generateBtn) {
-          generateBtn.addEventListener('click', () => this.generateAcknowledgment());
-        }
+        // Acknowledgment type selection
+        document.querySelectorAll('input[name="backCover.acknowledgment.type"]').forEach(radio => {
+          radio.addEventListener('change', () => this.handleAcknowledgmentTypeChange());
+        });
 
-        // Initialize Sortable if available
-        if (typeof Sortable !== 'undefined') {
-          Sortable.create(container, {
-            handle: '.drag-handle',
-            animation: 150,
-            ghostClass: 'sortable-ghost',
-            onEnd: () => this.reindexAssignments()
-          });
-        }
+        // Special thanks type selection
+        document.querySelectorAll('input[name="backCover.specialThanks.type"]').forEach(radio => {
+          radio.addEventListener('change', () => this.handleSpecialThanksTypeChange());
+        });
+
+        // Generate Acknowledgment button
+        document.getElementById('generate-acknowledgment-btn')?.addEventListener('click', () => {
+          this.generateAcknowledgment();
+        });
+
+        // Regenerate Acknowledgment button
+        document.getElementById('regenerate-acknowledgment-btn')?.addEventListener('click', () => {
+          this.generateAcknowledgment();
+        });
+
+        // Use Acknowledgment button
+        document.getElementById('use-acknowledgment-btn')?.addEventListener('click', () => {
+          this.useGeneratedAcknowledgment();
+        });
+
+        // Generate Special Thanks button
+        document.getElementById('generate-special-thanks-btn')?.addEventListener('click', () => {
+          this.generateSpecialThanks();
+        });
+
+        // Regenerate Special Thanks button
+        document.getElementById('regenerate-special-thanks-btn')?.addEventListener('click', () => {
+          this.generateSpecialThanks();
+        });
+
+        // Use Special Thanks button
+        document.getElementById('use-special-thanks-btn')?.addEventListener('click', () => {
+          this.useGeneratedSpecialThanks();
+        });
+
+        // Finish button
+        document.getElementById('finish-button')?.addEventListener('click', () => {
+          this.handleFinish();
+        });
+
+        // Update deceased name placeholder
+        this.updateDeceasedNamePlaceholder();
       },
 
-      addAssignmentRow() {
-        const container = document.getElementById('assignments-list');
+      addBackCoverItem(fieldName, containerId, placeholder) {
+        const container = document.getElementById(containerId);
         if (!container) return;
 
-        const index = container.querySelectorAll('.dynamic-entry').length;
-        
-        const rowHTML = `
-          <div class="dynamic-entry p-3 border rounded-lg bg-gray-50" data-index="${index}">
-            <div class="flex items-start gap-2">
-              <div class="drag-handle cursor-move mt-2" title="Drag to reorder">
-                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M7 2a1 1 0 110 2 1 1 0 010-2zm6 0a1 1 0 110 2 1 1 0 010-2zM7 8a1 1 0 110 2 1 1 0 010-2zm6 0a1 1 0 110 2 1 1 0 010-2zM7 14a1 1 0 110 2 1 1 0 010-2zm6 0a1 1 0 110 2 1 1 0 010-2z"/>
-                </svg>
-              </div>
-              <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-1">Assignment / Role</label>
-                  <input type="text" class="assignment-title w-full p-2 border rounded-lg" 
-                         name="backCover.assignments.${index}.title" 
-                         placeholder="e.g., Pallbearers" />
-                  <p class="text-xs text-gray-400 mt-1">If this looks like "Pallbearers" or "Flower Bearers", a name list will appear.</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-1">Who</label>
-                  <input type="text" class="assignment-who w-full p-2 border rounded-lg" 
-                         name="backCover.assignments.${index}.who" 
-                         placeholder="e.g., Nephews" />
-                </div>
-                <div class="col-span-1 md:col-span-2">
-                  <div class="names-section hidden mt-2">
-                    <div class="flex items-center justify-between mb-2">
-                      <label class="text-sm font-medium text-gray-600">Names</label>
-                      <button type="button" class="add-name px-2 py-1 text-xs rounded bg-indigo-100 text-indigo-700 hover:bg-indigo-200">+ Add Name</button>
-                    </div>
-                    <div class="names-list space-y-2"></div>
-                  </div>
-                </div>
-              </div>
-              <button type="button" class="remove-assignment px-2 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200">Remove</button>
-            </div>
+        const currentItems = container.querySelectorAll('input').length;
+        const newIndex = currentItems;
+
+        const itemHTML = `
+          <div class="${fieldName.slice(0, -1)}-entry flex gap-2 items-center">
+            <input type="text" name="backCover.${fieldName}.${newIndex}" class="flex-1 p-2 border rounded-lg bg-white text-center" placeholder="${placeholder}" />
+            <button type="button" class="remove-back-cover-item px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove</button>
           </div>
         `;
-        
-        container.insertAdjacentHTML('beforeend', rowHTML);
-        
-        // Bind events for this row
-        const row = container.lastElementChild;
-        this.bindAssignmentRowEvents(row);
-      },
 
-      bindAssignmentRowEvents(row) {
-        const titleInput = row.querySelector('.assignment-title');
-        const namesSection = row.querySelector('.names-section');
-        const addNameBtn = row.querySelector('.add-name');
-        const removeBtn = row.querySelector('.remove-assignment');
+        container.insertAdjacentHTML('beforeend', itemHTML);
 
-        // Auto-detect when to show names list
-        const checkShowNames = () => {
-          const title = titleInput.value || '';
-          if (/pallbearer|flower\s*bearer|honorary/i.test(title)) {
-            namesSection.classList.remove('hidden');
-          } else {
-            namesSection.classList.add('hidden');
-          }
-        };
-
-        if (titleInput) {
-          titleInput.addEventListener('input', checkShowNames);
-          checkShowNames();
-        }
-
-        // Add name button
-        if (addNameBtn) {
-          addNameBtn.addEventListener('click', () => {
-            const namesList = row.querySelector('.names-list');
-            const nameHTML = `
-              <div class="flex items-center gap-2">
-                <input type="text" class="w-full p-2 border rounded-lg" placeholder="Full name" />
-                <button type="button" class="remove-name px-2 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200">Remove</button>
-              </div>
-            `;
-            namesList.insertAdjacentHTML('beforeend', nameHTML);
-            
-            const nameRow = namesList.lastElementChild;
-            nameRow.querySelector('.remove-name').addEventListener('click', () => {
-              nameRow.remove();
-              this.reindexAssignments();
-            });
-            
-            this.reindexAssignments();
-          });
-        }
-
-        // Remove row button
-        if (removeBtn) {
-          removeBtn.addEventListener('click', () => {
-            row.remove();
-            this.reindexAssignments();
-          });
-        }
-      },
-
-      reindexAssignments() {
-        const container = document.getElementById('assignments-list');
-        if (!container) return;
-
-        const rows = container.querySelectorAll('.dynamic-entry');
-        rows.forEach((row, rowIndex) => {
-          row.setAttribute('data-index', rowIndex);
-          
-          const titleInput = row.querySelector('.assignment-title');
-          const whoInput = row.querySelector('.assignment-who');
-          
-          if (titleInput) titleInput.setAttribute('name', `backCover.assignments.${rowIndex}.title`);
-          if (whoInput) whoInput.setAttribute('name', `backCover.assignments.${rowIndex}.who`);
-          
-          const nameInputs = row.querySelectorAll('.names-list input[type="text"]');
-          nameInputs.forEach((nameInput, nameIndex) => {
-            nameInput.setAttribute('name', `backCover.assignments.${rowIndex}.names.${nameIndex}`);
-          });
+        // Bind remove button
+        const removeBtn = container.lastElementChild.querySelector('.remove-back-cover-item');
+        removeBtn.addEventListener('click', (e) => {
+          e.target.closest('div').remove();
+          this.renumberBackCoverItems(containerId, fieldName);
         });
       },
 
-      async generateAcknowledgment() {
-        const textarea = document.getElementById('acknowledgment-textarea');
-        if (!textarea) return;
+      renumberBackCoverItems(containerId, fieldName) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
 
-        // Get deceased name from Step 1
-        const fullNameInput = document.querySelector('[name="frontCover.fullName"]');
-        const deceasedName = fullNameInput ? fullNameInput.value : 'the deceased';
+        const items = container.querySelectorAll('input[type="text"]');
+        items.forEach((input, index) => {
+          input.setAttribute('name', `backCover.${fieldName}.${index}`);
+        });
+      },
 
-        if (!deceasedName || deceasedName === 'the deceased') {
-          this.notify('Please enter the deceased\'s name in Step 1 first.', 'error');
-          return;
-        }
+      handleAcknowledgmentTypeChange() {
+        const selectedType = document.querySelector('input[name="backCover.acknowledgment.type"]:checked')?.value;
 
-        // Use existing AI generation setup
-        try {
-          const prompt = `Write a respectful family acknowledgment message for a funeral program. The deceased's name is ${deceasedName}. The message should be 80-130 words, express gratitude from the family, and close with "Signed, The Family". Be sincere and compassionate.`;
-          
-          // Call existing obituary generation function with custom prompt
-          const generatedText = await this.callAIGeneration(prompt);
-          
-          if (generatedText) {
-            textarea.value = generatedText;
-            this.notify('Acknowledgment generated successfully!', 'success');
-          }
-        } catch (error) {
-          console.error('Error generating acknowledgment:', error);
-          this.notify('Error generating acknowledgment. Please try again.', 'error');
+        // Hide all containers
+        document.getElementById('acknowledgment-generic-preview')?.classList.add('hidden');
+        document.getElementById('acknowledgment-manual-container')?.classList.add('hidden');
+        document.getElementById('acknowledgment-ai-container')?.classList.add('hidden');
+
+        // Show selected container
+        if (selectedType === 'generic') {
+          document.getElementById('acknowledgment-generic-preview')?.classList.remove('hidden');
+          this.setGenericAcknowledgment();
+        } else if (selectedType === 'manual') {
+          document.getElementById('acknowledgment-manual-container')?.classList.remove('hidden');
+        } else if (selectedType === 'ai') {
+          document.getElementById('acknowledgment-ai-container')?.classList.remove('hidden');
         }
       },
 
-      async callAIGeneration(customPrompt) {
-        // Use the existing AI API setup from setupObituaryGeneration
-        // This connects to your existing Gemini/AI configuration
-        const apiKey = "AIzaSyBLWtLjPpwzAGRbTg_uW-6dJfO9v99Cq1w";
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+      handleSpecialThanksTypeChange() {
+        const selectedType = document.querySelector('input[name="backCover.specialThanks.type"]:checked')?.value;
+
+        // Hide all containers
+        document.getElementById('special-thanks-manual-container')?.classList.add('hidden');
+        document.getElementById('special-thanks-ai-container')?.classList.add('hidden');
+
+        // Show selected container
+        if (selectedType === 'manual') {
+          document.getElementById('special-thanks-manual-container')?.classList.remove('hidden');
+        } else if (selectedType === 'ai') {
+          document.getElementById('special-thanks-ai-container')?.classList.remove('hidden');
+        }
+      },
+
+      updateDeceasedNamePlaceholder() {
+        const fullName = document.querySelector('input[name="frontCover.fullName"]')?.value || 
+                         document.querySelector('input[name="personal.fullLegalName"]')?.value || 
+                         '[Deceased\'s Name]';
+        
+        const placeholder = document.getElementById('deceased-name-placeholder');
+        if (placeholder) {
+          placeholder.textContent = fullName;
+        }
+      },
+
+      setGenericAcknowledgment() {
+        this.updateDeceasedNamePlaceholder();
+        
+        const fullName = document.querySelector('input[name="frontCover.fullName"]')?.value || 
+                         document.querySelector('input[name="personal.fullLegalName"]')?.value || 
+                         '[Deceased\'s Name]';
+
+        const genericText = `With deep and heartfelt appreciation, the family of ${fullName} would like to express our sincere thanks to everyone for your calls, text messages, visits, acts of kindness, and words of encouragement during this difficult time. Your support has been a tremendous source of strength and comfort.`;
+
+        document.getElementById('acknowledgment-final-text').value = genericText;
+      },
+
+      async generateAcknowledgment() {
+        const promptText = document.getElementById('acknowledgment-ai-prompt')?.value.trim();
+        
+        if (!promptText) {
+          this.notify('Please describe what you want in the acknowledgment', 'info');
+          return;
+        }
+
+        const fullName = document.querySelector('input[name="frontCover.fullName"]')?.value || 
+                         document.querySelector('input[name="personal.fullLegalName"]')?.value || 
+                         'the deceased';
+
+        document.getElementById('acknowledgment-loading')?.classList.remove('hidden');
+        document.getElementById('acknowledgment-ai-result')?.classList.add('hidden');
 
         try {
-          const response = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+          const aiPrompt = `You are writing a heartfelt acknowledgment for a funeral program. 
+
+CRITICAL REQUIREMENTS:
+- The acknowledgment MUST begin with: "With deep and heartfelt appreciation, the family of ${fullName}"
+- This opening is REQUIRED and cannot be changed
+- Keep the tone warm, sincere, and professional
+- Use 2-3 paragraphs
+- Be specific about what the user requested
+- End with gratitude
+
+User's instructions for the acknowledgment:
+${promptText}
+
+Write a complete acknowledgment following these requirements.`;
+
+          const response = await fetch('/.netlify/functions/generate-obituary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              contents: [{
-                parts: [{ text: customPrompt }]
-              }]
+              prompt: aiPrompt,
+              maxTokens: 500
             })
           });
 
-          if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
-          }
+          if (!response.ok) throw new Error('Failed to generate acknowledgment');
 
           const data = await response.json();
-          return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          const generatedText = data.text || data.content || '';
+
+          document.getElementById('acknowledgment-ai-text').textContent = generatedText;
+          document.getElementById('acknowledgment-ai-result')?.classList.remove('hidden');
+          document.getElementById('acknowledgment-loading')?.classList.add('hidden');
+
         } catch (error) {
-          console.error('AI Generation Error:', error);
-          throw error;
+          console.error('Error generating acknowledgment:', error);
+          this.notify('Failed to generate acknowledgment. Please try again.', 'error');
+          document.getElementById('acknowledgment-loading')?.classList.add('hidden');
+        }
+      },
+
+      useGeneratedAcknowledgment() {
+        const generatedText = document.getElementById('acknowledgment-ai-text')?.textContent;
+        if (generatedText) {
+          document.getElementById('acknowledgment-final-text').value = generatedText;
+          this.notify('Acknowledgment saved!', 'success');
+        }
+      },
+
+      async generateSpecialThanks() {
+        const promptText = document.getElementById('special-thanks-ai-prompt')?.value.trim();
+        
+        if (!promptText) {
+          this.notify('Please describe who you want to thank', 'info');
+          return;
+        }
+
+        document.getElementById('special-thanks-loading')?.classList.remove('hidden');
+        document.getElementById('special-thanks-ai-result')?.classList.add('hidden');
+
+        try {
+          const aiPrompt = `You are writing a special thanks section for a funeral program. 
+
+REQUIREMENTS:
+- Write a warm, heartfelt message thanking specific people or organizations
+- Keep it 1-2 paragraphs
+- Be specific and personal
+- Use names and details provided
+- Professional but warm tone
+
+Who/what to thank:
+${promptText}
+
+Write a complete special thanks message.`;
+
+          const response = await fetch('/.netlify/functions/generate-obituary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt: aiPrompt,
+              maxTokens: 400
+            })
+          });
+
+          if (!response.ok) throw new Error('Failed to generate special thanks');
+
+          const data = await response.json();
+          const generatedText = data.text || data.content || '';
+
+          document.getElementById('special-thanks-ai-text').textContent = generatedText;
+          document.getElementById('special-thanks-ai-result')?.classList.remove('hidden');
+          document.getElementById('special-thanks-loading')?.classList.add('hidden');
+
+        } catch (error) {
+          console.error('Error generating special thanks:', error);
+          this.notify('Failed to generate special thanks. Please try again.', 'error');
+          document.getElementById('special-thanks-loading')?.classList.add('hidden');
+        }
+      },
+
+      useGeneratedSpecialThanks() {
+        const generatedText = document.getElementById('special-thanks-ai-text')?.textContent;
+        if (generatedText) {
+          document.getElementById('special-thanks-final-text').value = generatedText;
+          this.notify('Special thanks saved!', 'success');
+        }
+      },
+
+      async handleFinish() {
+        // Save the current data
+        await this.saveData();
+        
+        // Show generating message
+        this.notify('Preparing your PDF...', 'info');
+        
+        // Generate PDF
+        setTimeout(() => {
+          this.generatePDF();
+        }, 500);
+      },
+
+      async generatePDF() {
+        // Load jsPDF library if not loaded
+        if (typeof window.jspdf === 'undefined') {
+          const script = document.createElement('script');
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+          script.onload = () => this.createPDF();
+          document.head.appendChild(script);
+        } else {
+          this.createPDF();
+        }
+      },
+
+      createPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+          orientation: 'portrait',
+          unit: 'in',
+          format: 'letter' // 8.5 x 11
+        });
+
+        const formData = this.collectFormData();
+        
+        // PAGE 1: Front Cover (Step 1 data)
+        this.addFrontCoverPage(doc, formData);
+        
+        // PAGE 2: Obituary
+        doc.addPage();
+        this.addObituaryPage(doc, formData);
+        
+        // PAGE 3: Order of Service
+        doc.addPage();
+        this.addOrderOfServicePage(doc, formData);
+        
+        // PAGE 4: Back Cover
+        doc.addPage();
+        this.addBackCoverPage(doc, formData);
+        
+        // Save PDF
+        const fileName = `${formData.frontCover?.fullName || 'Program'}_Funeral_Program.pdf`;
+        doc.save(fileName);
+        
+        this.notify('PDF generated successfully!', 'success');
+      },
+
+      addFrontCoverPage(doc, data) {
+        doc.setFontSize(24);
+        doc.text(data.frontCover?.fullName || '', 4.25, 2, { align: 'center' });
+        
+        doc.setFontSize(14);
+        doc.text(data.frontCover?.dob || '', 4.25, 2.5, { align: 'center' });
+        doc.text('-', 4.25, 2.7, { align: 'center' });
+        doc.text(data.frontCover?.dop || '', 4.25, 2.9, { align: 'center' });
+        
+        if (data.frontCover?.serviceDate) {
+          doc.setFontSize(12);
+          doc.text('Service Date:', 4.25, 4, { align: 'center' });
+          doc.text(data.frontCover.serviceDate, 4.25, 4.3, { align: 'center' });
+        }
+        
+        if (data.frontCover?.serviceTime) {
+          doc.text(data.frontCover.serviceTime, 4.25, 4.6, { align: 'center' });
+        }
+        
+        if (data.frontCover?.serviceLocation) {
+          doc.setFontSize(11);
+          doc.text(data.frontCover.serviceLocation, 4.25, 5.2, { align: 'center' });
+        }
+      },
+
+      addObituaryPage(doc, data) {
+        doc.setFontSize(18);
+        doc.text('Obituary', 4.25, 1, { align: 'center' });
+        
+        const obituaryText = document.getElementById('obituary-text')?.innerText || 'No obituary generated yet.';
+        
+        doc.setFontSize(11);
+        const lines = doc.splitTextToSize(obituaryText, 7);
+        doc.text(lines, 0.75, 1.5);
+      },
+
+      addOrderOfServicePage(doc, data) {
+        doc.setFontSize(18);
+        doc.text('Order of Service', 4.25, 1, { align: 'center' });
+        
+        let yPos = 1.5;
+        doc.setFontSize(12);
+        
+        if (data.orderOfService && data.orderOfService.length > 0) {
+          data.orderOfService.forEach((item, index) => {
+            doc.text(`${item.itemName || 'Untitled'}`, 4.25, yPos, { align: 'center' });
+            yPos += 0.2;
+            
+            if (item.personName) {
+              doc.setFontSize(10);
+              doc.text(item.personName, 4.25, yPos, { align: 'center' });
+              yPos += 0.15;
+            }
+            
+            if (item.additionalInfo) {
+              doc.setFontSize(9);
+              doc.text(`(${item.additionalInfo})`, 4.25, yPos, { align: 'center' });
+              yPos += 0.15;
+            }
+            
+            yPos += 0.3;
+            doc.setFontSize(12);
+          });
+        } else {
+          doc.text('No order of service added', 4.25, 2, { align: 'center' });
+        }
+      },
+
+      addBackCoverPage(doc, data) {
+        let yPos = 0.75;
+        doc.setFontSize(12);
+        
+        // Pallbearers
+        if (data.backCover?.pallbearers && data.backCover.pallbearers.length > 0) {
+          doc.setFontSize(14);
+          doc.text('PALLBEARERS', 4.25, yPos, { align: 'center' });
+          yPos += 0.3;
+          doc.setFontSize(11);
+          data.backCover.pallbearers.forEach(name => {
+            if (name) {
+              doc.text(name, 4.25, yPos, { align: 'center' });
+              yPos += 0.2;
+            }
+          });
+          yPos += 0.2;
+        }
+        
+        // Flower Bearers
+        if (data.backCover?.flowerBearers && data.backCover.flowerBearers.length > 0) {
+          doc.setFontSize(14);
+          doc.text('FLOWER BEARERS', 4.25, yPos, { align: 'center' });
+          yPos += 0.3;
+          doc.setFontSize(11);
+          data.backCover.flowerBearers.forEach(name => {
+            if (name) {
+              doc.text(name, 4.25, yPos, { align: 'center' });
+              yPos += 0.2;
+            }
+          });
+          yPos += 0.2;
+        }
+        
+        // Interment
+        if (data.backCover?.interment) {
+          doc.setFontSize(14);
+          doc.text('INTERMENT', 4.25, yPos, { align: 'center' });
+          yPos += 0.3;
+          doc.setFontSize(11);
+          doc.text(data.backCover.interment, 4.25, yPos, { align: 'center' });
+          yPos += 0.4;
+        }
+        
+        // Final Care
+        if (data.backCover?.finalCare?.name) {
+          doc.setFontSize(14);
+          doc.text('FINAL CARE ENTRUSTED TO', 4.25, yPos, { align: 'center' });
+          yPos += 0.3;
+          doc.setFontSize(11);
+          doc.text(data.backCover.finalCare.name, 4.25, yPos, { align: 'center' });
+          yPos += 0.2;
+          if (data.backCover.finalCare.address) {
+            doc.text(data.backCover.finalCare.address, 4.25, yPos, { align: 'center' });
+            yPos += 0.2;
+          }
+          if (data.backCover.finalCare.cityStateZip) {
+            doc.text(data.backCover.finalCare.cityStateZip, 4.25, yPos, { align: 'center' });
+            yPos += 0.2;
+          }
+          yPos += 0.2;
+        }
+        
+        // Acknowledgment
+        const acknowledgment = data.backCover?.acknowledgment?.finalText || 
+                              document.getElementById('acknowledgment-final-text')?.value || '';
+        if (acknowledgment) {
+          doc.setFontSize(10);
+          const ackLines = doc.splitTextToSize(acknowledgment, 7);
+          doc.text(ackLines, 4.25, yPos, { align: 'center' });
         }
       }
     };
