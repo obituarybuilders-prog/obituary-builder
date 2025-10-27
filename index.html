@@ -1626,6 +1626,89 @@
               </div>
             </div>
           </div>
+
+          <!-- Step 5: Order of Service -->
+          <div id="step-5" class="form-step">
+            <h2 class="text-xl font-semibold mb-6 text-gray-700 border-b pb-3">Order of Service</h2>
+            
+            <div class="space-y-6">
+              <p class="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <strong>Instructions:</strong> Build your order of service by adding items below. You can drag and drop to reorder them. Check the "Additional Info" box to add details like location or notes.
+              </p>
+
+              <!-- Order of Service Items Container -->
+              <div id="order-of-service-container" class="space-y-3">
+                
+                <!-- First Item: Processional (Default) -->
+                <div class="service-item p-4 border-2 border-gray-300 rounded-lg bg-gray-50" data-index="0" draggable="true">
+                  <div class="flex items-center mb-3">
+                    <div class="drag-handle cursor-move mr-3 text-gray-400 hover:text-gray-600" title="Drag to reorder">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+                      </svg>
+                    </div>
+                    <span class="text-lg font-semibold text-gray-700">Service Item #<span class="item-number">1</span></span>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-600 mb-1">Service Item</label>
+                      <input type="text" name="orderOfService.0.itemName" class="w-full p-2 border rounded-lg bg-white" placeholder="e.g., Processional" value="Processional" />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-600 mb-1">Person Performing</label>
+                      <input type="text" name="orderOfService.0.personName" class="w-full p-2 border rounded-lg bg-white" placeholder="Enter name" />
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="flex items-center">
+                      <input type="checkbox" class="additional-info-checkbox mr-2" data-index="0" />
+                      <span class="text-sm font-medium text-gray-700">Additional Information</span>
+                    </label>
+                  </div>
+
+                  <!-- Conditional Additional Info Field -->
+                  <div class="additional-info-container hidden mt-3">
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Additional Details (e.g., location, special notes)</label>
+                    <input type="text" name="orderOfService.0.additionalInfo" class="w-full p-2 border rounded-lg bg-white" placeholder="Enter additional details" />
+                  </div>
+
+                  <button type="button" class="remove-service-item mt-3 px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">
+                    Remove Item
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- Add Service Item Button -->
+              <button type="button" id="add-service-item" class="w-full py-3 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all duration-200 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Add Service Item
+              </button>
+
+              <!-- Preview Order of Service -->
+              <div class="mt-8 p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border-2 border-purple-200">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">Preview Order of Service</h3>
+                <div id="service-preview" class="bg-white p-4 rounded-lg shadow-sm">
+                  <ol class="space-y-2" id="preview-list">
+                    <!-- Preview items will appear here -->
+                  </ol>
+                  <p class="text-sm text-gray-500 mt-3 italic">Preview will update as you add items</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-8 flex justify-between">
+              <button type="button" class="prev-button bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700">Previous</button>
+              <div>
+                <button type="button" class="save-progress-button bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Save</button>
+                <button type="button" class="next-button bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700 ml-2">Finish</button>
+              </div>
+            </div>
+          </div>
         </form>
       </div>
     </div>
@@ -1971,6 +2054,7 @@
         this.bindEulogistLogic();
         this.bindFormattingHandlers();
         this.setupObituaryGeneration();
+        this.initOrderOfService();
       },
 
       bindFormattingHandlers() {
@@ -3766,6 +3850,249 @@ DO NOT:
             previewWindow.document.close();
           });
         }
+      },
+
+      // ========== STEP 5: ORDER OF SERVICE ==========
+      
+      initOrderOfService() {
+        this.serviceItemCounter = 1;
+        
+        // Add Service Item button
+        const addBtn = document.getElementById('add-service-item');
+        if (addBtn) {
+          addBtn.addEventListener('click', () => this.addServiceItem());
+        }
+
+        // Bind existing items
+        this.bindServiceItemEvents();
+        
+        // Initialize drag and drop
+        this.initDragAndDrop();
+        
+        // Update preview on load
+        this.updateServicePreview();
+      },
+
+      addServiceItem() {
+        const container = document.getElementById('order-of-service-container');
+        if (!container) return;
+        
+        const newIndex = this.serviceItemCounter;
+        
+        const itemHTML = `
+          <div class="service-item p-4 border-2 border-gray-300 rounded-lg bg-gray-50" data-index="${newIndex}" draggable="true">
+            <div class="flex items-center mb-3">
+              <div class="drag-handle cursor-move mr-3 text-gray-400 hover:text-gray-600" title="Drag to reorder">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+                </svg>
+              </div>
+              <span class="text-lg font-semibold text-gray-700">Service Item #<span class="item-number">${newIndex + 1}</span></span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Service Item</label>
+                <input type="text" name="orderOfService.${newIndex}.itemName" class="w-full p-2 border rounded-lg bg-white" placeholder="e.g., Old Testament Scripture Reading" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Person Performing</label>
+                <input type="text" name="orderOfService.${newIndex}.personName" class="w-full p-2 border rounded-lg bg-white" placeholder="Enter name" />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="flex items-center">
+                <input type="checkbox" class="additional-info-checkbox mr-2" data-index="${newIndex}" />
+                <span class="text-sm font-medium text-gray-700">Additional Information</span>
+              </label>
+            </div>
+
+            <div class="additional-info-container hidden mt-3">
+              <label class="block text-sm font-medium text-gray-600 mb-1">Additional Details (e.g., location, special notes)</label>
+              <input type="text" name="orderOfService.${newIndex}.additionalInfo" class="w-full p-2 border rounded-lg bg-white" placeholder="Enter additional details" />
+            </div>
+
+            <button type="button" class="remove-service-item mt-3 px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">
+              Remove Item
+            </button>
+          </div>
+        `;
+        
+        container.insertAdjacentHTML('beforeend', itemHTML);
+        this.serviceItemCounter++;
+        
+        // Rebind events to new item
+        this.bindServiceItemEvents();
+        
+        // Reinitialize drag and drop
+        this.initDragAndDrop();
+        
+        // Update preview
+        this.updateServicePreview();
+      },
+
+      bindServiceItemEvents() {
+        // Remove buttons
+        document.querySelectorAll('.remove-service-item').forEach(button => {
+          button.removeEventListener('click', this.boundRemoveServiceItem);
+          this.boundRemoveServiceItem = (e) => this.removeServiceItem(e);
+          button.addEventListener('click', this.boundRemoveServiceItem);
+        });
+        
+        // Additional info checkboxes
+        document.querySelectorAll('.additional-info-checkbox').forEach(checkbox => {
+          checkbox.removeEventListener('change', this.boundToggleAdditionalInfo);
+          this.boundToggleAdditionalInfo = (e) => this.toggleAdditionalInfo(e);
+          checkbox.addEventListener('change', this.boundToggleAdditionalInfo);
+        });
+        
+        // Update preview on input change
+        document.querySelectorAll('#order-of-service-container input').forEach(input => {
+          input.removeEventListener('input', this.boundUpdatePreview);
+          this.boundUpdatePreview = () => this.updateServicePreview();
+          input.addEventListener('input', this.boundUpdatePreview);
+        });
+      },
+
+      removeServiceItem(e) {
+        const item = e.target.closest('.service-item');
+        if (item) {
+          item.remove();
+          this.renumberServiceItems();
+          this.updateServicePreview();
+        }
+      },
+
+      toggleAdditionalInfo(e) {
+        const checkbox = e.target;
+        const item = checkbox.closest('.service-item');
+        if (!item) return;
+        
+        const additionalInfoContainer = item.querySelector('.additional-info-container');
+        
+        if (checkbox.checked) {
+          additionalInfoContainer.classList.remove('hidden');
+        } else {
+          additionalInfoContainer.classList.add('hidden');
+          const input = additionalInfoContainer.querySelector('input');
+          if (input) input.value = '';
+        }
+        
+        this.updateServicePreview();
+      },
+
+      renumberServiceItems() {
+        const items = document.querySelectorAll('.service-item');
+        items.forEach((item, index) => {
+          const itemNumber = item.querySelector('.item-number');
+          if (itemNumber) {
+            itemNumber.textContent = index + 1;
+          }
+          
+          item.setAttribute('data-index', index);
+          
+          item.querySelectorAll('input, textarea').forEach(input => {
+            const name = input.getAttribute('name');
+            if (name && name.startsWith('orderOfService.')) {
+              const newName = name.replace(/orderOfService\.\d+\./, `orderOfService.${index}.`);
+              input.setAttribute('name', newName);
+            }
+          });
+          
+          const checkbox = item.querySelector('.additional-info-checkbox');
+          if (checkbox) {
+            checkbox.setAttribute('data-index', index);
+          }
+        });
+      },
+
+      initDragAndDrop() {
+        const container = document.getElementById('order-of-service-container');
+        if (!container) return;
+        
+        const items = container.querySelectorAll('.service-item');
+        let draggedItem = null;
+        
+        items.forEach(item => {
+          item.setAttribute('draggable', 'true');
+          
+          item.removeEventListener('dragstart', this.boundDragStart);
+          this.boundDragStart = (e) => {
+            draggedItem = item;
+            item.style.opacity = '0.5';
+            e.dataTransfer.effectAllowed = 'move';
+          };
+          item.addEventListener('dragstart', this.boundDragStart);
+          
+          item.removeEventListener('dragend', this.boundDragEnd);
+          this.boundDragEnd = () => {
+            item.style.opacity = '1';
+            draggedItem = null;
+          };
+          item.addEventListener('dragend', this.boundDragEnd);
+          
+          item.removeEventListener('dragover', this.boundDragOver);
+          this.boundDragOver = (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            
+            if (item !== draggedItem && draggedItem) {
+              const rect = item.getBoundingClientRect();
+              const midpoint = rect.top + rect.height / 2;
+              
+              if (e.clientY < midpoint) {
+                item.parentNode.insertBefore(draggedItem, item);
+              } else {
+                item.parentNode.insertBefore(draggedItem, item.nextSibling);
+              }
+            }
+          };
+          item.addEventListener('dragover', this.boundDragOver);
+          
+          item.removeEventListener('drop', this.boundDrop);
+          this.boundDrop = (e) => {
+            e.preventDefault();
+            this.renumberServiceItems();
+            this.updateServicePreview();
+          };
+          item.addEventListener('drop', this.boundDrop);
+        });
+      },
+
+      updateServicePreview() {
+        const previewList = document.getElementById('preview-list');
+        if (!previewList) return;
+        
+        previewList.innerHTML = '';
+        
+        const items = document.querySelectorAll('.service-item');
+        
+        if (items.length === 0) {
+          previewList.innerHTML = '<p class="text-gray-500 italic">No items added yet</p>';
+          return;
+        }
+        
+        items.forEach((item) => {
+          const itemName = item.querySelector('input[name*=".itemName"]')?.value || 'Untitled Item';
+          const personName = item.querySelector('input[name*=".personName"]')?.value || '';
+          const additionalInfo = item.querySelector('input[name*=".additionalInfo"]')?.value || '';
+          const hasAdditionalInfo = item.querySelector('.additional-info-checkbox')?.checked || false;
+          
+          let previewHTML = `<li class="text-gray-700"><strong>${itemName}</strong>`;
+          
+          if (personName) {
+            previewHTML += ` - ${personName}`;
+          }
+          
+          if (hasAdditionalInfo && additionalInfo) {
+            previewHTML += ` <span class="text-sm text-gray-600">(${additionalInfo})</span>`;
+          }
+          
+          previewHTML += '</li>';
+          
+          previewList.insertAdjacentHTML('beforeend', previewHTML);
+        });
       }
     };
 
