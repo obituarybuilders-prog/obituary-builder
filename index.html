@@ -3693,20 +3693,22 @@ CRITICAL CONTENT REQUIREMENT:
           prompt += `MARRIAGE INFORMATION (CRITICAL - MUST INCLUDE IN OBITUARY):\n`;
           const marriage = formData.family.marriage;
           
-          if (marriage.spouseFirstName && marriage.spouseLastName) {
-            const spouseName = `${marriage.spouseFirstName} ${marriage.spouseLastName}`;
+          // Correct structure: marriage.spouse.firstName and marriage.spouse.lastName
+          if (marriage.spouse && (marriage.spouse.firstName || marriage.spouse.lastName)) {
+            const spouseName = `${marriage.spouse.firstName || ''} ${marriage.spouse.lastName || ''}`.trim();
             prompt += `Spouse Full Name: ${spouseName}\n`;
             
             if (marriage.marriageDate) prompt += `Marriage Date: ${marriage.marriageDate}\n`;
-            if (marriage.whereMarried) prompt += `Marriage Location: ${marriage.whereMarried}\n`;
-            if (marriage.additionalDetails) prompt += `Marriage Details: ${marriage.additionalDetails}\n`;
+            if (marriage.marriageLocation) prompt += `Marriage Location: ${marriage.marriageLocation}\n`;
+            if (marriage.details) prompt += `Marriage Details: ${marriage.details}\n`;
             
             // Check if spouse is living or deceased
-            if (marriage.spouseStatus === 'Deceased') {
+            if (marriage.spouse.status === 'deceased') {
               prompt += `**SPOUSE STATUS: DECEASED**\n`;
-              if (marriage.spouseDeathDate) prompt += `Spouse Death Date: ${marriage.spouseDeathDate}\n`;
+              if (marriage.spouse.deathDate) prompt += `Spouse Death Date: ${marriage.spouse.deathDate}\n`;
               prompt += `CRITICAL: Mention spouse ${spouseName} in "preceded in death" section\n`;
-            } else if (marriage.spouseStatus === 'Living') {
+            } else {
+              // Default to living if not specified
               prompt += `**SPOUSE STATUS: LIVING**\n`;
               prompt += `CRITICAL: Mention spouse ${spouseName} in "survivors" section at the beginning\n`;
             }
