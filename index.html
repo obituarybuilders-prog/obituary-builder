@@ -3534,7 +3534,25 @@
 
 
       buildObituaryPrompt(formData) {
-        let prompt = `You are writing an obituary for a FUNERAL PROGRAM (not a death announcement). This will be printed in the actual funeral service booklet.
+        // CRITICAL: Get gender and pronoun information FIRST
+        const gender = formData.personal?.gender || formData.frontCover?.gender || '';
+        const pronouns = formData.personal?.pronouns || formData.frontCover?.pronouns || '';
+        const fullName = formData.frontCover?.fullName || formData.personal?.fullLegalName || 'the deceased';
+        
+        let prompt = `**CRITICAL GENDER/PRONOUN INFORMATION - THIS OVERRIDES EVERYTHING:**
+Full Name: ${fullName}
+Gender: ${gender}
+Pronouns: ${pronouns}
+
+**ABSOLUTE MANDATORY INSTRUCTION:** 
+- If gender is "Female" or pronouns contain "She" or "Her", you MUST use SHE/HER/HERS throughout the ENTIRE obituary
+- If gender is "Male" or pronouns contain "He" or "Him", you MUST use HE/HIM/HIS throughout the ENTIRE obituary
+- NEVER assume gender based on the person's name - ${fullName} identifies as ${gender}
+- Use the specified pronouns: ${pronouns}
+- This applies to EVERY SINGLE reference in the obituary - no exceptions
+- Double-check every pronoun before finalizing
+
+You are writing an obituary for a FUNERAL PROGRAM (not a death announcement). This will be printed in the actual funeral service booklet.
 
 CRITICAL STYLE REQUIREMENTS:
 - DO NOT start with "passed away" or death announcement language
@@ -3583,6 +3601,33 @@ CRITICAL CONTENT REQUIREMENT:
           if (formData.faith.homeChurch) prompt += `Home Church: ${formData.faith.homeChurch}\n`;
           if (formData.faith.currentChurch) prompt += `Current Church: ${formData.faith.currentChurch}\n`;
           if (formData.faith.ministries) prompt += `Church Ministries/Involvement: ${formData.faith.ministries}\n`;
+          
+          // CRITICAL: Church Memberships with Baptism and Salvation
+          if (formData.faith.churchMemberships) {
+            Object.values(formData.faith.churchMemberships).forEach((church, index) => {
+              if (church.churchName) {
+                prompt += `\nCHURCH MEMBERSHIP #${index + 1} (MUST INCLUDE ALL DETAILS):\n`;
+                prompt += `Church: ${church.churchName}\n`;
+                if (church.location) prompt += `Location: ${church.location}\n`;
+                if (church.timeframe) prompt += `Timeframe: ${church.timeframe}\n`;
+                if (church.ministryRoles) prompt += `Ministry Roles: ${church.ministryRoles}\n`;
+                
+                // CRITICAL: Baptism information - MUST BE MENTIONED IF CHECKED
+                if (church.baptized === 'Yes') {
+                  prompt += `**BAPTIZED AT THIS CHURCH** - MUST explicitly mention baptism in the obituary\n`;
+                  if (church.baptismDate) prompt += `  Baptism Date: ${church.baptismDate}\n`;
+                  if (church.baptismOfficiant) prompt += `  Officiated by: ${church.baptismOfficiant}\n`;
+                }
+                
+                // CRITICAL: Salvation information - MUST BE MENTIONED IF CHECKED
+                if (church.salvation === 'Yes') {
+                  prompt += `**GOT SAVED/ACCEPTED CHRIST AT THIS CHURCH** - MUST explicitly mention accepting Christ or salvation in the obituary\n`;
+                  if (church.salvationDate) prompt += `  Salvation Date: ${church.salvationDate}\n`;
+                  if (church.salvationDetails) prompt += `  Details: ${church.salvationDetails}\n`;
+                }
+              }
+            });
+          }
           prompt += `\n`;
         }
 
@@ -3643,7 +3688,33 @@ CRITICAL CONTENT REQUIREMENT:
           prompt += `\n`;
         }
 
-        // Marriage Information
+        // Marriage Information - NEW STRUCTURE from Step 4
+        if (formData.family && formData.family.marriage) {
+          prompt += `MARRIAGE INFORMATION (CRITICAL - MUST INCLUDE IN OBITUARY):\n`;
+          const marriage = formData.family.marriage;
+          
+          if (marriage.spouseFirstName && marriage.spouseLastName) {
+            const spouseName = `${marriage.spouseFirstName} ${marriage.spouseLastName}`;
+            prompt += `Spouse Full Name: ${spouseName}\n`;
+            
+            if (marriage.marriageDate) prompt += `Marriage Date: ${marriage.marriageDate}\n`;
+            if (marriage.whereMarried) prompt += `Marriage Location: ${marriage.whereMarried}\n`;
+            if (marriage.additionalDetails) prompt += `Marriage Details: ${marriage.additionalDetails}\n`;
+            
+            // Check if spouse is living or deceased
+            if (marriage.spouseStatus === 'Deceased') {
+              prompt += `**SPOUSE STATUS: DECEASED**\n`;
+              if (marriage.spouseDeathDate) prompt += `Spouse Death Date: ${marriage.spouseDeathDate}\n`;
+              prompt += `CRITICAL: Mention spouse ${spouseName} in "preceded in death" section\n`;
+            } else if (marriage.spouseStatus === 'Living') {
+              prompt += `**SPOUSE STATUS: LIVING**\n`;
+              prompt += `CRITICAL: Mention spouse ${spouseName} in "survivors" section at the beginning\n`;
+            }
+          }
+          prompt += `\n`;
+        }
+        
+        // Marriage Information - OLD STRUCTURE (fallback for existing data)
         if (formData.surviving && formData.surviving.marriageStatus === 'yes' && formData.surviving.spouse) {
           prompt += `MARRIAGE (MUST INCLUDE ALL DETAILS):\n`;
           if (formData.surviving.spouse.marriageDate) prompt += `Marriage Date: ${formData.surviving.spouse.marriageDate}\n`;
@@ -3970,6 +4041,29 @@ DO NOT:
 - Skip any checked boxes or filled fields
 `;
         }
+
+        // CRITICAL TONE ENFORCEMENT
+        const tone = formData.additional?.obituaryTone || 'Traditional and Formal';
+        prompt += `
+
+**CRITICAL TONE REQUIREMENT - THIS IS MANDATORY:**
+The obituary MUST be written in a "${tone}" tone. This is not optional.
+
+TONE DEFINITIONS:
+- Traditional and Formal: Professional, respectful, conventional language, formal structure
+- Warm and Personal: Intimate, conversational, heartfelt, like a family member speaking
+- Celebratory and Uplifting: Joyful, positive, emphasizing life's celebrations and achievements
+- Spiritual and Faith-Centered: Religious language, Bible references, faith journey emphasis, eternal perspective
+- Simple and Straightforward: Direct, clear, minimal embellishment, easy to read
+
+**The selected tone ("${tone}") must be CLEARLY EVIDENT in:**
+- Word choice and vocabulary
+- Sentence structure and flow
+- Overall feeling and emotion
+- How information is presented
+
+If regenerating with a new tone, ensure the tone change is SIGNIFICANT and OBVIOUS.
+`;
 
         return prompt;
       },
@@ -4619,8 +4713,17 @@ Write a complete special thanks message.`;
       },
 
       async handleFinish() {
-        // Save the current data
-        await this.saveData();
+        // Collect and save form data
+        try {
+          const formData = this.collectFormData();
+          if (this.currentUser) {
+            await this.saveFormData(formData);
+            this.notify('Program saved successfully!', 'success');
+          }
+        } catch (error) {
+          console.error('Error saving:', error);
+          // Don't stop PDF generation if save fails
+        }
         
         // Show generating message
         this.notify('Preparing your PDF...', 'info');
