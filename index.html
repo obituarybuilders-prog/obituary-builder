@@ -5118,98 +5118,104 @@ Write a complete special thanks message.`;
         const pageHeight = 11;
         const centerX = pageWidth / 2;
         
-        let currentY = 0.5;
+        let currentY = 0.75;
         
-        // CELEBRATION OF LIFE - Small caps at top
-        doc.setFontSize(12);
+        // CELEBRATION OF LIFE - Small spaced caps at top (ONLY ONCE)
+        doc.setFontSize(11);
         doc.setFont('helvetica', 'normal');
-        const celebrationText = 'C E L E B R A T I O N  O F  L I F E';
+        const celebrationText = 'C E L E B R A T I O N   O F   L I F E';
         doc.text(celebrationText, centerX, currentY, { align: 'center' });
-        currentY += 0.4;
+        currentY += 0.5;
         
         // Title (Mother, Father, etc.) - Italic script-style
         const title = data.frontCover?.title || '';
         if (title) {
-          doc.setFontSize(36);
+          doc.setFontSize(34);
           doc.setFont('times', 'italic');
           doc.text(title, centerX, currentY, { align: 'center' });
           currentY += 0.5;
-        } else {
-          currentY += 0.2;
         }
         
-        // Full Name - Italic script-style, large
-        const fullName = data.frontCover?.fullName || '';
-        doc.setFontSize(32);
-        doc.setFont('times', 'italic');
-        doc.text(fullName, centerX, currentY, { align: 'center' });
-        currentY += 0.6;
+        // Full Name with Title - Italic script-style, large
+        // This should include title if it exists (e.g., "Deaconess Angelo McAdoo")
+        let fullName = data.frontCover?.fullName || '';
         
-        // PHOTO - Centered circular photo
+        // Check if we need to prepend a title to the name
+        if (title && !fullName.toLowerCase().startsWith(title.toLowerCase())) {
+          fullName = `${title} ${fullName}`;
+        }
+        
+        doc.setFontSize(30);
+        doc.setFont('times', 'italic');
+        
+        // Split long names into multiple lines if needed
+        const nameLines = doc.splitTextToSize(fullName, 7);
+        nameLines.forEach(line => {
+          doc.text(line, centerX, currentY, { align: 'center' });
+          currentY += 0.4;
+        });
+        
+        currentY += 0.3;
+        
+        // PHOTO SPACE - Large space for photo
         const photoUrl = data.frontCover?.photoUrl;
+        const photoSize = 4; // 4 inches for better display
+        const photoY = currentY;
+        
         if (photoUrl) {
           try {
-            // Add photo in a circular frame
-            const photoSize = 3.5; // 3.5 inches diameter
             const photoX = centerX - (photoSize / 2);
-            const photoY = currentY;
-            
-            // Note: jsPDF has limitations with circular images
-            // We'll add it as a rectangle and note that actual circular masking
-            // would need additional processing
             doc.addImage(photoUrl, 'JPEG', photoX, photoY, photoSize, photoSize);
-            currentY += photoSize + 0.5;
           } catch (error) {
             console.error('Error adding photo to PDF:', error);
-            currentY += 0.3;
           }
-        } else {
-          currentY += 0.3;
         }
         
-        // Date of Birth and Date of Death - Script style on same line
+        // Move Y position below photo area
+        currentY = photoY + photoSize + 0.3;
+        
+        // Date of Birth (left) and Date of Death (right) - BELOW PHOTO
         const dob = this.formatDateForPDF(data.frontCover?.dob);
         const dod = this.formatDateForPDF(data.frontCover?.dop);
         
-        doc.setFontSize(20);
+        doc.setFontSize(18);
         doc.setFont('times', 'italic');
         
         if (dob && dod) {
-          // Position dates on left and right
-          doc.text(dob, 1.5, currentY, { align: 'left' });
-          doc.text(dod, pageWidth - 1.5, currentY, { align: 'right' });
+          doc.text(dob, 1.2, currentY, { align: 'left' });
+          doc.text(dod, pageWidth - 1.2, currentY, { align: 'right' });
           currentY += 0.6;
         }
         
-        // Service Day of Week - All caps
+        // Now add all service information BELOW the dates
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(11);
+        
+        // Service Day and Date
         const serviceDay = this.getDayOfWeek(data.frontCover?.serviceDate);
         const serviceDate = this.formatDateForPDF(data.frontCover?.serviceDate);
         
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(12);
-        
         if (serviceDay && serviceDate) {
-          const serviceDayDate = `${serviceDay}, ${serviceDate.toUpperCase()}`;
-          doc.text(serviceDayDate, centerX, currentY, { align: 'center' });
+          const serviceDayDateText = `${serviceDay}, ${serviceDate.toUpperCase()}`;
+          doc.text(serviceDayDateText, centerX, currentY, { align: 'center' });
           currentY += 0.25;
         }
         
         // Service Time
         const serviceTime = this.formatTimeForPDF(data.frontCover?.serviceTime);
         if (serviceTime) {
-          doc.text(serviceTime.toUpperCase(), centerX, currentY, { align: 'center' });
+          doc.text(serviceTime, centerX, currentY, { align: 'center' });
           currentY += 0.3;
         }
         
-        // Venue/Church Name - All caps
+        // Venue/Church Name
         const venueName = data.frontCover?.venue?.name || data.frontCover?.serviceLocation || '';
         if (venueName) {
-          doc.setFontSize(11);
           doc.text(venueName.toUpperCase(), centerX, currentY, { align: 'center' });
           currentY += 0.2;
         }
         
-        // Venue Address - Street
+        // Venue Street Address
         const venueStreet = data.frontCover?.venue?.street || '';
         if (venueStreet) {
           doc.text(venueStreet.toUpperCase(), centerX, currentY, { align: 'center' });
@@ -5222,7 +5228,13 @@ Write a complete special thanks message.`;
         const venueZip = data.frontCover?.venue?.zip || '';
         
         if (venueCity || venueState || venueZip) {
-          const cityStateZip = `${venueCity}${venueCity && (venueState || venueZip) ? ', ' : ''}${venueState} ${venueZip}`.trim();
+          let cityStateZip = venueCity;
+          if (venueState) {
+            cityStateZip += (cityStateZip ? ', ' : '') + venueState;
+          }
+          if (venueZip) {
+            cityStateZip += (cityStateZip ? ' ' : '') + venueZip;
+          }
           doc.text(cityStateZip.toUpperCase(), centerX, currentY, { align: 'center' });
           currentY += 0.4;
         }
