@@ -987,6 +987,25 @@
                         <input type="text" name="career.employers.0.role" class="p-2 border rounded-lg"
                           placeholder="Role" />
                       </div>
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                        <div>
+                          <label class="block text-xs text-gray-600 mb-1">Start Date</label>
+                          <input type="text" name="career.employers.0.startDate" class="w-full p-2 border rounded-lg"
+                            placeholder="YYYY or MM/YYYY" />
+                          <p class="text-xs text-gray-500 mt-1">e.g., 1995 or 06/1995</p>
+                        </div>
+                        <div>
+                          <label class="block text-xs text-gray-600 mb-1">End Date</label>
+                          <input type="text" name="career.employers.0.endDate" class="w-full p-2 border rounded-lg"
+                            placeholder="YYYY or Present" />
+                          <p class="text-xs text-gray-500 mt-1">e.g., 2020 or Present</p>
+                        </div>
+                        <div>
+                          <label class="block text-xs text-gray-600 mb-1">Years of Service</label>
+                          <input type="text" name="career.employers.0.yearsOfService" class="w-full p-2 border rounded-lg"
+                            placeholder="e.g., 25 years" />
+                        </div>
+                      </div>
                       <button type="button"
                         class="remove-employer px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove
                         Employer</button>
@@ -2422,6 +2441,22 @@
               <input type="text" name="career.employers.${index}.location" class="p-2 border rounded-lg" placeholder="Location" />
               <input type="text" name="career.employers.${index}.role" class="p-2 border rounded-lg" placeholder="Role" />
             </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Start Date</label>
+                <input type="text" name="career.employers.${index}.startDate" class="w-full p-2 border rounded-lg" placeholder="YYYY or MM/YYYY" />
+                <p class="text-xs text-gray-500 mt-1">e.g., 1995 or 06/1995</p>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">End Date</label>
+                <input type="text" name="career.employers.${index}.endDate" class="w-full p-2 border rounded-lg" placeholder="YYYY or Present" />
+                <p class="text-xs text-gray-500 mt-1">e.g., 2020 or Present</p>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Years of Service</label>
+                <input type="text" name="career.employers.${index}.yearsOfService" class="w-full p-2 border rounded-lg" placeholder="e.g., 25 years" />
+              </div>
+            </div>
             <button type="button" class="remove-employer px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-sm">Remove Employer</button>
           </div>`);
 
@@ -3584,6 +3619,21 @@ CRITICAL CONTENT REQUIREMENT:
           }
         }
 
+        // OTHER RELATIVES WHO PRECEDED IN DEATH (from the "Preceded in Death By" section)
+        if (formData.preceded) {
+          const precededList = Object.values(formData.preceded).filter(p => p.name);
+          if (precededList.length > 0) {
+            prompt += `PRECEDED IN DEATH BY (Other Relatives) - MUST LIST ALL IN PARAGRAPH 6:\n`;
+            precededList.forEach(person => {
+              prompt += `  - ${person.name}`;
+              if (person.relationship) prompt += ` (${person.relationship})`;
+              if (person.location) prompt += ` of ${person.location}`;
+              prompt += `\n`;
+            });
+            prompt += `\n**CRITICAL:** These people MUST be mentioned in the "preceded in death" section of the obituary.\n\n`;
+          }
+        }
+
         // Education
         if (formData.education && formData.education.colleges) {
           prompt += `EDUCATION (MUST INCLUDE ALL SCHOOLS):\n`;
@@ -3612,6 +3662,24 @@ CRITICAL CONTENT REQUIREMENT:
             }
           });
           prompt += `\n`;
+        }
+
+        // Employers (from Step 3 - with dates)
+        if (formData.career && formData.career.employers) {
+          const employersList = Object.values(formData.career.employers).filter(e => e.companyName);
+          if (employersList.length > 0) {
+            prompt += `EMPLOYMENT HISTORY (MUST INCLUDE ALL IN PARAGRAPH 4):\n`;
+            employersList.forEach(employer => {
+              prompt += `  - ${employer.role || 'Position'} at ${employer.companyName}`;
+              if (employer.location) prompt += `, ${employer.location}`;
+              if (employer.startDate) prompt += ` (Started: ${employer.startDate}`;
+              if (employer.endDate) prompt += ` - Ended: ${employer.endDate}`;
+              if (employer.startDate || employer.endDate) prompt += `)`;
+              if (employer.yearsOfService) prompt += ` - ${employer.yearsOfService}`;
+              prompt += `\n`;
+            });
+            prompt += `\n`;
+          }
         }
 
         // Marriage Information - NEW STRUCTURE from Step 4
