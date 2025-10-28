@@ -5001,6 +5001,74 @@ Write a complete special thanks message.`;
         }, 500);
       },
 
+      formatDateForPDF(dateString) {
+        if (!dateString) return '';
+        
+        try {
+          const date = new Date(dateString);
+          
+          // Check if date is valid
+          if (isNaN(date.getTime())) return dateString;
+          
+          const months = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+          ];
+          
+          const month = months[date.getMonth()];
+          const day = date.getDate();
+          const year = date.getFullYear();
+          
+          return `${month} ${day}, ${year}`;
+        } catch (error) {
+          console.error('Error formatting date:', error);
+          return dateString;
+        }
+      },
+
+      formatTimeForPDF(timeString) {
+        if (!timeString) return '';
+        
+        try {
+          // If it's already formatted nicely, return it
+          if (timeString.includes('AM') || timeString.includes('PM')) {
+            return timeString;
+          }
+          
+          // Try to parse 24-hour format (HH:MM)
+          const [hours, minutes] = timeString.split(':');
+          const hour = parseInt(hours);
+          const min = minutes || '00';
+          
+          if (hour === 0) {
+            return `12:${min} AM`;
+          } else if (hour < 12) {
+            return `${hour}:${min} AM`;
+          } else if (hour === 12) {
+            return `12:${min} PM`;
+          } else {
+            return `${hour - 12}:${min} PM`;
+          }
+        } catch (error) {
+          console.error('Error formatting time:', error);
+          return timeString;
+        }
+      },
+
+      getDayOfWeek(dateString) {
+        if (!dateString) return '';
+        
+        try {
+          const date = new Date(dateString);
+          if (isNaN(date.getTime())) return '';
+          
+          const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+          return days[date.getDay()];
+        } catch (error) {
+          return '';
+        }
+      },
+
       async generatePDF() {
         // Load jsPDF library if not loaded
         if (typeof window.jspdf === 'undefined') {
@@ -5046,27 +5114,124 @@ Write a complete special thanks message.`;
       },
 
       addFrontCoverPage(doc, data) {
-        doc.setFontSize(24);
-        doc.text(data.frontCover?.fullName || '', 4.25, 2, { align: 'center' });
+        const pageWidth = 8.5;
+        const pageHeight = 11;
+        const centerX = pageWidth / 2;
         
-        doc.setFontSize(14);
-        doc.text(data.frontCover?.dob || '', 4.25, 2.5, { align: 'center' });
-        doc.text('-', 4.25, 2.7, { align: 'center' });
-        doc.text(data.frontCover?.dop || '', 4.25, 2.9, { align: 'center' });
+        let currentY = 0.5;
         
-        if (data.frontCover?.serviceDate) {
-          doc.setFontSize(12);
-          doc.text('Service Date:', 4.25, 4, { align: 'center' });
-          doc.text(data.frontCover.serviceDate, 4.25, 4.3, { align: 'center' });
+        // CELEBRATION OF LIFE - Small caps at top
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        const celebrationText = 'C E L E B R A T I O N  O F  L I F E';
+        doc.text(celebrationText, centerX, currentY, { align: 'center' });
+        currentY += 0.4;
+        
+        // Title (Mother, Father, etc.) - Italic script-style
+        const title = data.frontCover?.title || '';
+        if (title) {
+          doc.setFontSize(36);
+          doc.setFont('times', 'italic');
+          doc.text(title, centerX, currentY, { align: 'center' });
+          currentY += 0.5;
+        } else {
+          currentY += 0.2;
         }
         
-        if (data.frontCover?.serviceTime) {
-          doc.text(data.frontCover.serviceTime, 4.25, 4.6, { align: 'center' });
+        // Full Name - Italic script-style, large
+        const fullName = data.frontCover?.fullName || '';
+        doc.setFontSize(32);
+        doc.setFont('times', 'italic');
+        doc.text(fullName, centerX, currentY, { align: 'center' });
+        currentY += 0.6;
+        
+        // PHOTO - Centered circular photo
+        const photoUrl = data.frontCover?.photoUrl;
+        if (photoUrl) {
+          try {
+            // Add photo in a circular frame
+            const photoSize = 3.5; // 3.5 inches diameter
+            const photoX = centerX - (photoSize / 2);
+            const photoY = currentY;
+            
+            // Note: jsPDF has limitations with circular images
+            // We'll add it as a rectangle and note that actual circular masking
+            // would need additional processing
+            doc.addImage(photoUrl, 'JPEG', photoX, photoY, photoSize, photoSize);
+            currentY += photoSize + 0.5;
+          } catch (error) {
+            console.error('Error adding photo to PDF:', error);
+            currentY += 0.3;
+          }
+        } else {
+          currentY += 0.3;
         }
         
-        if (data.frontCover?.serviceLocation) {
+        // Date of Birth and Date of Death - Script style on same line
+        const dob = this.formatDateForPDF(data.frontCover?.dob);
+        const dod = this.formatDateForPDF(data.frontCover?.dop);
+        
+        doc.setFontSize(20);
+        doc.setFont('times', 'italic');
+        
+        if (dob && dod) {
+          // Position dates on left and right
+          doc.text(dob, 1.5, currentY, { align: 'left' });
+          doc.text(dod, pageWidth - 1.5, currentY, { align: 'right' });
+          currentY += 0.6;
+        }
+        
+        // Service Day of Week - All caps
+        const serviceDay = this.getDayOfWeek(data.frontCover?.serviceDate);
+        const serviceDate = this.formatDateForPDF(data.frontCover?.serviceDate);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(12);
+        
+        if (serviceDay && serviceDate) {
+          const serviceDayDate = `${serviceDay}, ${serviceDate.toUpperCase()}`;
+          doc.text(serviceDayDate, centerX, currentY, { align: 'center' });
+          currentY += 0.25;
+        }
+        
+        // Service Time
+        const serviceTime = this.formatTimeForPDF(data.frontCover?.serviceTime);
+        if (serviceTime) {
+          doc.text(serviceTime.toUpperCase(), centerX, currentY, { align: 'center' });
+          currentY += 0.3;
+        }
+        
+        // Venue/Church Name - All caps
+        const venueName = data.frontCover?.venue?.name || data.frontCover?.serviceLocation || '';
+        if (venueName) {
           doc.setFontSize(11);
-          doc.text(data.frontCover.serviceLocation, 4.25, 5.2, { align: 'center' });
+          doc.text(venueName.toUpperCase(), centerX, currentY, { align: 'center' });
+          currentY += 0.2;
+        }
+        
+        // Venue Address - Street
+        const venueStreet = data.frontCover?.venue?.street || '';
+        if (venueStreet) {
+          doc.text(venueStreet.toUpperCase(), centerX, currentY, { align: 'center' });
+          currentY += 0.2;
+        }
+        
+        // Venue City, State, ZIP
+        const venueCity = data.frontCover?.venue?.city || '';
+        const venueState = data.frontCover?.venue?.state || '';
+        const venueZip = data.frontCover?.venue?.zip || '';
+        
+        if (venueCity || venueState || venueZip) {
+          const cityStateZip = `${venueCity}${venueCity && (venueState || venueZip) ? ', ' : ''}${venueState} ${venueZip}`.trim();
+          doc.text(cityStateZip.toUpperCase(), centerX, currentY, { align: 'center' });
+          currentY += 0.4;
+        }
+        
+        // Officiating Person
+        const officiatingName = data.frontCover?.eulogistName || '';
+        if (officiatingName) {
+          const officiatingText = `${officiatingName.toUpperCase()}, OFFICIATING`;
+          doc.text(officiatingText, centerX, currentY, { align: 'center' });
         }
       },
 
