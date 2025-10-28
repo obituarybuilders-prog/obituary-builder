@@ -5118,16 +5118,16 @@ Write a complete special thanks message.`;
         const pageHeight = 11;
         const centerX = pageWidth / 2;
         
-        let currentY = 0.75;
+        let currentY = 0.6;
         
-        // 1. COVER TITLE - "CELEBRATION OF LIFE" (ONLY ONCE, NO DUPLICATION)
-        doc.setFontSize(11);
+        // 1. COVER TITLE - "CELEBRATION OF LIFE" (ONLY ONCE)
+        doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         const celebrationText = 'C E L E B R A T I O N   O F   L I F E';
         doc.text(celebrationText, centerX, currentY, { align: 'center' });
-        currentY += 0.5;
+        currentY += 0.35;
         
-        // 2. PREFIX AND DECEASED'S FULL NAME - Script font (Times Italic)
+        // 2. PREFIX AND DECEASED'S FULL NAME - Brush Script MT style (use Times Italic as fallback)
         const title = data.frontCover?.title || '';
         const fullName = data.frontCover?.fullName || '';
         
@@ -5147,24 +5147,24 @@ Write a complete special thanks message.`;
         }
         
         if (displayName) {
-          doc.setFontSize(32);
-          doc.setFont('times', 'italic'); // Script-style font
+          doc.setFontSize(28);
+          doc.setFont('times', 'italic'); // Brush Script MT style - using Times Italic as PDF fallback
           
           // Handle long names that need to wrap
           const nameLines = doc.splitTextToSize(displayName, 7);
           nameLines.forEach(line => {
             doc.text(line, centerX, currentY, { align: 'center' });
-            currentY += 0.4;
+            currentY += 0.35;
           });
         }
         
-        currentY += 0.3;
+        currentY += 0.2;
         
-        // 3. PHOTO SPACE - 6" x 7" if no picture, adjust proportionally if picture exists
+        // 3. PHOTO SPACE - 5" wide x 6" tall (REDUCED to ensure room for all elements)
         const photoUrl = data.frontCover?.photoUrl;
+        const photoWidth = 5;
+        const photoHeight = 6;
         const photoY = currentY;
-        let photoHeight = 7;
-        let photoWidth = 6;
         
         if (photoUrl) {
           try {
@@ -5176,61 +5176,60 @@ Write a complete special thanks message.`;
         }
         
         // Move Y position below photo area
-        currentY = photoY + photoHeight + 0.4;
+        currentY = photoY + photoHeight + 0.3;
         
         // 4. SUNRISE (DOB) LEFT and SUNSET (DOP) RIGHT - Same line, Script font
         const dob = this.formatDateForPDF(data.frontCover?.dob);
         const dod = this.formatDateForPDF(data.frontCover?.dop);
         
-        doc.setFontSize(18);
+        doc.setFontSize(16);
         doc.setFont('times', 'italic'); // Script-style font for dates
         
         if (dob && dod) {
-          doc.text(dob, 1.0, currentY, { align: 'left' });
-          doc.text(dod, pageWidth - 1.0, currentY, { align: 'right' });
-          currentY += 0.5;
+          doc.text(dob, 0.8, currentY, { align: 'left' });
+          doc.text(dod, pageWidth - 0.8, currentY, { align: 'right' });
+          currentY += 0.4;
         }
         
-        // Add some row space before service information
-        currentY += 0.2;
+        // Add row space before service information
+        currentY += 0.15;
         
-        // ALL REMAINING ITEMS ARE CENTERED AND USE PRINTED FONT (HELVETICA)
+        // ========== ALL REMAINING ITEMS: CENTERED, PRINTED FONT (HELVETICA) ==========
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(11);
+        doc.setFontSize(10);
         
-        // 5. DATE OF FUNERAL - Day and Date (e.g., "Saturday, November 1, 2025")
+        // 5. DATE OF FUNERAL - Day and Date (e.g., "SATURDAY, NOVEMBER 1, 2025")
         const serviceDay = this.getDayOfWeek(data.frontCover?.serviceDate);
         const serviceDate = this.formatDateForPDF(data.frontCover?.serviceDate);
         
         if (serviceDay && serviceDate) {
           const serviceDayDateText = `${serviceDay}, ${serviceDate.toUpperCase()}`;
           doc.text(serviceDayDateText, centerX, currentY, { align: 'center' });
-          currentY += 0.25;
+          currentY += 0.2;
         }
         
         // 6. TIME OF FUNERAL
         const serviceTime = this.formatTimeForPDF(data.frontCover?.serviceTime);
         if (serviceTime) {
           doc.text(serviceTime, centerX, currentY, { align: 'center' });
-          currentY += 0.25;
+          currentY += 0.2;
         }
         
-        // 7. FUNERAL LOCATION
-        // Line 1: Name of the place
+        // 7. VENUE NAME
         const venueName = data.frontCover?.venue?.name || data.frontCover?.serviceLocation || '';
         if (venueName) {
           doc.text(venueName.toUpperCase(), centerX, currentY, { align: 'center' });
-          currentY += 0.2;
+          currentY += 0.18;
         }
         
-        // Line 2: Street address
+        // 8. STREET ADDRESS
         const venueStreet = data.frontCover?.venue?.street || '';
         if (venueStreet) {
           doc.text(venueStreet.toUpperCase(), centerX, currentY, { align: 'center' });
-          currentY += 0.2;
+          currentY += 0.18;
         }
         
-        // Line 3: City, State, ZIP
+        // 9. CITY, STATE, ZIP
         const venueCity = data.frontCover?.venue?.city || '';
         const venueState = data.frontCover?.venue?.state || '';
         const venueZip = data.frontCover?.venue?.zip || '';
@@ -5247,31 +5246,35 @@ Write a complete special thanks message.`;
           currentY += 0.25;
         }
         
-        // 8. HOST PASTOR
+        // 10. HOST PASTOR
         const hostPastor = data.frontCover?.venue?.pastor || '';
-        if (hostPastor) {
-          doc.text(hostPastor.toUpperCase(), centerX, currentY, { align: 'center' });
-          currentY += 0.2;
-        }
         
-        // 9. OFFICIATING PERSON
-        // CRITICAL: Do not duplicate if host pastor and officiant are the same
+        // 11. OFFICIATING PERSON
         const officiatingName = data.frontCover?.eulogistName || '';
         
-        if (officiatingName) {
-          // Check if officiant is different from host pastor
-          const isDifferentPerson = !hostPastor || 
-                                    hostPastor.toLowerCase().trim() !== officiatingName.toLowerCase().trim();
+        // CRITICAL: Handle duplication logic
+        if (hostPastor && officiatingName) {
+          // Check if they are the same person
+          const isSamePerson = hostPastor.toLowerCase().trim() === officiatingName.toLowerCase().trim();
           
-          if (isDifferentPerson) {
-            const officiatingText = `${officiatingName.toUpperCase()}, OFFICIATING`;
-            doc.text(officiatingText, centerX, currentY, { align: 'center' });
+          if (isSamePerson) {
+            // Same person - show once with "OFFICIATING"
+            const combinedText = `${hostPastor.toUpperCase()}, OFFICIATING`;
+            doc.text(combinedText, centerX, currentY, { align: 'center' });
           } else {
-            // Same person - just add "OFFICIATING" to previous line
-            currentY -= 0.2; // Move back up
+            // Different people - show both
+            doc.text(hostPastor.toUpperCase(), centerX, currentY, { align: 'center' });
+            currentY += 0.18;
             const officiatingText = `${officiatingName.toUpperCase()}, OFFICIATING`;
             doc.text(officiatingText, centerX, currentY, { align: 'center' });
           }
+        } else if (hostPastor) {
+          // Only host pastor provided
+          doc.text(hostPastor.toUpperCase(), centerX, currentY, { align: 'center' });
+        } else if (officiatingName) {
+          // Only officiant provided
+          const officiatingText = `${officiatingName.toUpperCase()}, OFFICIATING`;
+          doc.text(officiatingText, centerX, currentY, { align: 'center' });
         }
       },
 
