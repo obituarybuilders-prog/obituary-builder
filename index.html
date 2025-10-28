@@ -909,7 +909,7 @@
             </div>
           </div>
 
-          <!-- Step 3: Education, Career, Hobbies & Personality -->
+          <!-- Step 3: Education & Career -->
           <div id="step-3" class="form-step">
             <h2 class="text-xl font-semibold mb-6 text-gray-700 border-b pb-3">Education, Career & Interests</h2>
             
@@ -1056,108 +1056,7 @@
                 </fieldset>
               </div>
 
-              <!-- 5) Hobbies, Passions, and Skills -->
-              <div class="space-y-4">
-                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Hobbies, Passions, and
-                  Skills</h3>
 
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-2">Hobbies/Passions (select any)</label>
-                  <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    <label class="flex items-center">
-                      <input type="checkbox" name="hobbies.passions" value="Poetry" class="mr-2" />
-                      <span class="text-sm">Poetry</span>
-                    </label>
-                    <label class="flex items-center">
-                      <input type="checkbox" name="hobbies.passions" value="Singing" class="mr-2" />
-                      <span class="text-sm">Singing</span>
-                    </label>
-                    <label class="flex items-center">
-                      <input type="checkbox" name="hobbies.passions" value="Dancing" class="mr-2" />
-                      <span class="text-sm">Dancing</span>
-                    </label>
-                    <label class="flex items-center">
-                      <input type="checkbox" name="hobbies.passions" value="Cooking" class="mr-2" />
-                      <span class="text-sm">Cooking</span>
-                    </label>
-                    <label class="flex items-center">
-                      <input type="checkbox" name="hobbies.passions" value="Musical Instruments" class="mr-2" />
-                      <span class="text-sm">Musical Instruments</span>
-                    </label>
-                    <label class="flex items-center">
-                      <input type="checkbox" name="hobbies.passions" value="Sports" class="mr-2" />
-                      <span class="text-sm">Sports</span>
-                    </label>
-                    <label class="flex items-center">
-                      <input type="checkbox" name="hobbies.passions" value="Other" class="mr-2"
-                        id="hobbies-other-checkbox" />
-                      <span class="text-sm">Other</span>
-                    </label>
-                  </div>
-                  <div id="hobbies-other-container" class="hidden mt-2">
-                    <label for="hobbies-other-text" class="block text-sm font-medium text-gray-600 mb-1">Other
-                      (describe)</label>
-                    <input type="text" id="hobbies-other-text" name="hobbies.passionsOther"
-                      class="w-full p-2 border rounded-lg" />
-                  </div>
-                </div>
-
-                <div>
-                  <label for="special-skills" class="block text-sm font-medium text-gray-600 mb-1">Special
-                    Skills</label>
-                  <input type="text" id="special-skills" name="hobbies.specialSkills"
-                    class="w-full p-2 border rounded-lg" />
-                </div>
-              </div>
-
-              <!-- 6) Personality & Legacy -->
-              <div class="space-y-4">
-                <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">Personality & Legacy</h3>
-
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-2">Known For (select all that apply)</label>
-                  <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    <label class="flex items-center">
-                      <input type="checkbox" name="personality.knownFor" value="Humor" class="mr-2" />
-                      <span class="text-sm">Humor</span>
-                    </label>
-                    <label class="flex items-center">
-                      <input type="checkbox" name="personality.knownFor" value="Compassion" class="mr-2" />
-                      <span class="text-sm">Compassion</span>
-                    </label>
-                    <label class="flex items-center">
-                      <input type="checkbox" name="personality.knownFor" value="Energy" class="mr-2" />
-                      <span class="text-sm">Energy</span>
-                    </label>
-                    <label class="flex items-center">
-                      <input type="checkbox" name="personality.knownFor" value="Hospitality" class="mr-2" />
-                      <span class="text-sm">Hospitality</span>
-                    </label>
-                    <label class="flex items-center">
-                      <input type="checkbox" name="personality.knownFor" value="Storytelling" class="mr-2" />
-                      <span class="text-sm">Storytelling</span>
-                    </label>
-                    <label class="flex items-center">
-                      <input type="checkbox" name="personality.knownFor" value="Other" class="mr-2"
-                        id="personality-other-checkbox" />
-                      <span class="text-sm">Other</span>
-                    </label>
-                  </div>
-                  <div id="personality-other-container" class="hidden mt-2">
-                    <label for="personality-other-text" class="block text-sm font-medium text-gray-600 mb-1">Other
-                      (describe)</label>
-                    <input type="text" id="personality-other-text" name="personality.knownForOther"
-                      class="w-full p-2 border rounded-lg" />
-                  </div>
-                </div>
-
-                <div>
-                  <label for="favorite-sayings" class="block text-sm font-medium text-gray-600 mb-1">Favorite Sayings /
-                    Personal Traits</label>
-                  <input type="text" id="favorite-sayings" name="personality.favoriteSayings"
-                    class="w-full p-2 border rounded-lg" />
-                </div>
-              </div>
 
             </div>
 
@@ -3631,13 +3530,40 @@ CRITICAL CONTENT REQUIREMENT:
           prompt += `\n`;
         }
 
-        // Family Information - Parents
+        // CRITICAL: Family Information - Parents (from family.mother and family.father)
+        if (formData.family) {
+          prompt += `PARENTS (MUST INCLUDE IN PARAGRAPH 1 - USE ACTUAL NAMES):\n`;
+          
+          if (formData.family.mother && (formData.family.mother.firstName || formData.family.mother.lastName)) {
+            const motherName = `${formData.family.mother.firstName || ''} ${formData.family.mother.lastName || ''}`.trim();
+            prompt += `  - Mother: ${motherName}`;
+            if (formData.family.mother.status === 'deceased') {
+              prompt += ` (DECEASED - MUST use "the late ${motherName}" in Paragraph 1 AND list in Paragraph 6)`;
+            }
+            if (formData.family.mother.maidenName) {
+              prompt += ` (maiden name: ${formData.family.mother.maidenName})`;
+            }
+            prompt += `\n`;
+          }
+          
+          if (formData.family.father && (formData.family.father.firstName || formData.family.father.lastName)) {
+            const fatherName = `${formData.family.father.firstName || ''} ${formData.family.father.lastName || ''}`.trim();
+            prompt += `  - Father: ${fatherName}`;
+            if (formData.family.father.status === 'deceased') {
+              prompt += ` (DECEASED - MUST use "the late ${fatherName}" in Paragraph 1 AND list in Paragraph 6)`;
+            }
+            prompt += `\n`;
+          }
+          prompt += `\n**CRITICAL:** Parents MUST be mentioned by name in Paragraph 1. Never say "to the parents" or "to her parents" - USE ACTUAL NAMES.\n\n`;
+        }
+
+        // Family Information - Parents from surviving section (if any)
         if (formData.surviving && formData.surviving.parents) {
-          prompt += `PARENTS (MUST INCLUDE ALL):\n`;
+          prompt += `ADDITIONAL PARENTS/GUARDIANS (if applicable):\n`;
           Object.values(formData.surviving.parents).forEach(parent => {
             if (parent.name) {
               prompt += `  - ${parent.relationship || 'Parent'}: ${parent.name}`;
-              if (parent.deceased) prompt += ` (Deceased - use "late" prefix in opening sentence)`;
+              if (parent.deceased) prompt += ` (Deceased - use "late" prefix)`;
               prompt += `\n`;
             }
           });
@@ -3742,32 +3668,8 @@ CRITICAL CONTENT REQUIREMENT:
           prompt += `\n`;
         }
 
-        // Hobbies & Interests
-        if (formData.hobbies) {
-          let hasHobbies = false;
-          let hobbiesList = [];
-          
-          if (formData.hobbies.selectedHobbies) {
-            Object.entries(formData.hobbies.selectedHobbies).forEach(([hobby, checked]) => {
-              if (checked) {
-                hasHobbies = true;
-                hobbiesList.push(hobby);
-              }
-            });
-          }
-          if (formData.hobbies.other) {
-            hasHobbies = true;
-            hobbiesList.push(formData.hobbies.other);
-          }
-          
-          if (hasHobbies) {
-            prompt += `HOBBIES & INTERESTS (MUST INCLUDE ALL):\n`;
-            hobbiesList.forEach(hobby => {
-              prompt += `  - ${hobby}\n`;
-            });
-            prompt += `\n`;
-          }
-        }
+        // Hobbies & Interests section REMOVED per user request
+
 
         // Organizations & Memberships
         if (formData.career && formData.career.organizations) {
@@ -4021,7 +3923,6 @@ Then career: "She/He worked diligently at [employer], where she/he retired after
 - Years of service
 - Retirement details
 - Achievements
-- Hobbies and interests (weave in naturally)
 - Organizations and memberships
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -4042,22 +3943,36 @@ Examples:
 SECTION 4: Preceded & Survivors (NO HEADER IN FINAL TEXT)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**PART A: PRECEDED IN DEATH - COMES FIRST**
+**PART A: PRECEDED IN DEATH - MANDATORY IF ANYONE DECEASED**
 
-**CRITICAL:** If ANY family members are marked as deceased, list them ALL here first:
+🚨🚨🚨 CRITICAL: THIS SECTION IS MANDATORY 🚨🚨🚨
 
-"[Title] [Last Name] is preceded in death by [list all deceased family members with full names and relationships]."
+**If ANY of the following are marked as deceased, this section MUST appear:**
+- Parents (check data above for deceased status)
+- Spouse (check if marked deceased)
+- Children (check if any marked deceased)
+- Siblings (check if any marked deceased)
+- Grandchildren (check if any marked deceased)
 
-Examples:
-- "Mother McDaniel is preceded in death by her oldest sister Annie Will Grissett Burt, her daughter Angela Kaye McDaniel-Wallace, special children Bishop Theo B. and Dr. Florence W. Bailey."
+**DO NOT skip this section if ANYONE is deceased. This paragraph MUST be included.**
 
-**MUST include deceased:**
-- Parents (already mentioned in Section 1)
-- Spouse (if deceased)
-- Siblings (list by name)
-- Children (list by name)
-- Grandchildren (list by name)
-- Any other deceased family members provided
+**REQUIRED FORMAT:**
+"[Title] [Last Name] was preceded in death by [complete list of ALL deceased family members with names and relationships]."
+
+**YOU MUST LIST ALL DECEASED:**
+1. Deceased mother (if marked deceased) - use exact name from data
+2. Deceased father (if marked deceased) - use exact name from data
+3. Deceased spouse - "[Spouse name]"
+4. Deceased children - "one daughter, [Name]" or "one son, [Name]"
+5. Deceased siblings - "her sister, [Name]" or "her brother, [Name]"
+6. Deceased grandchildren - by name if provided
+7. Any other deceased family members provided in data
+
+**Examples:**
+- "Mother McDaniel was preceded in death by her parents, the late John and Mary Thompson; her husband, James McDaniel; her daughter, Angela Johnson; and her sister, Annie Williams."
+- "Brother Smith was preceded in death by his father, the late Robert Smith; and his son, Michael Smith."
+
+**If NO ONE is marked as deceased, you may skip this section and go straight to survivors.**
 
 **PART B: SURVIVORS - COMES SECOND**
 
@@ -4843,7 +4758,7 @@ Write a complete special thanks message.`;
       async handleFinish() {
         // Collect and save form data
         try {
-          const formData = this.collectFormData();
+          const formData = this.getFormData();
           if (this.currentUser) {
             await this.saveFormData(formData);
             this.notify('Program saved successfully!', 'success');
@@ -4882,7 +4797,7 @@ Write a complete special thanks message.`;
           format: 'letter' // 8.5 x 11
         });
 
-        const formData = this.collectFormData();
+        const formData = this.getFormData();
         
         // PAGE 1: Front Cover (Step 1 data)
         this.addFrontCoverPage(doc, formData);
