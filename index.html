@@ -5120,78 +5120,85 @@ Write a complete special thanks message.`;
         
         let currentY = 0.75;
         
-        // CELEBRATION OF LIFE - Small spaced caps at top (ONLY ONCE)
+        // 1. COVER TITLE - "CELEBRATION OF LIFE" (ONLY ONCE, NO DUPLICATION)
         doc.setFontSize(11);
         doc.setFont('helvetica', 'normal');
         const celebrationText = 'C E L E B R A T I O N   O F   L I F E';
         doc.text(celebrationText, centerX, currentY, { align: 'center' });
         currentY += 0.5;
         
-        // Title (Mother, Father, etc.) - Italic script-style
+        // 2. PREFIX AND DECEASED'S FULL NAME - Script font (Times Italic)
         const title = data.frontCover?.title || '';
-        if (title) {
-          doc.setFontSize(34);
-          doc.setFont('times', 'italic');
-          doc.text(title, centerX, currentY, { align: 'center' });
-          currentY += 0.5;
+        const fullName = data.frontCover?.fullName || '';
+        
+        // Combine title and name if both exist
+        let displayName = '';
+        if (title && fullName) {
+          // Check if title is already in the name
+          if (!fullName.toLowerCase().includes(title.toLowerCase())) {
+            displayName = `${title} ${fullName}`;
+          } else {
+            displayName = fullName;
+          }
+        } else if (fullName) {
+          displayName = fullName;
+        } else if (title) {
+          displayName = title;
         }
         
-        // Full Name with Title - Italic script-style, large
-        // This should include title if it exists (e.g., "Deaconess Angelo McAdoo")
-        let fullName = data.frontCover?.fullName || '';
-        
-        // Check if we need to prepend a title to the name
-        if (title && !fullName.toLowerCase().startsWith(title.toLowerCase())) {
-          fullName = `${title} ${fullName}`;
+        if (displayName) {
+          doc.setFontSize(32);
+          doc.setFont('times', 'italic'); // Script-style font
+          
+          // Handle long names that need to wrap
+          const nameLines = doc.splitTextToSize(displayName, 7);
+          nameLines.forEach(line => {
+            doc.text(line, centerX, currentY, { align: 'center' });
+            currentY += 0.4;
+          });
         }
-        
-        doc.setFontSize(30);
-        doc.setFont('times', 'italic');
-        
-        // Split long names into multiple lines if needed
-        const nameLines = doc.splitTextToSize(fullName, 7);
-        nameLines.forEach(line => {
-          doc.text(line, centerX, currentY, { align: 'center' });
-          currentY += 0.4;
-        });
         
         currentY += 0.3;
         
-        // PHOTO SPACE - Large space for photo
+        // 3. PHOTO SPACE - 6" x 7" if no picture, adjust proportionally if picture exists
         const photoUrl = data.frontCover?.photoUrl;
-        const photoSize = 4; // 4 inches for better display
         const photoY = currentY;
+        let photoHeight = 7;
+        let photoWidth = 6;
         
         if (photoUrl) {
           try {
-            const photoX = centerX - (photoSize / 2);
-            doc.addImage(photoUrl, 'JPEG', photoX, photoY, photoSize, photoSize);
+            const photoX = centerX - (photoWidth / 2);
+            doc.addImage(photoUrl, 'JPEG', photoX, photoY, photoWidth, photoHeight);
           } catch (error) {
             console.error('Error adding photo to PDF:', error);
           }
         }
         
         // Move Y position below photo area
-        currentY = photoY + photoSize + 0.3;
+        currentY = photoY + photoHeight + 0.4;
         
-        // Date of Birth (left) and Date of Death (right) - BELOW PHOTO
+        // 4. SUNRISE (DOB) LEFT and SUNSET (DOP) RIGHT - Same line, Script font
         const dob = this.formatDateForPDF(data.frontCover?.dob);
         const dod = this.formatDateForPDF(data.frontCover?.dop);
         
         doc.setFontSize(18);
-        doc.setFont('times', 'italic');
+        doc.setFont('times', 'italic'); // Script-style font for dates
         
         if (dob && dod) {
-          doc.text(dob, 1.2, currentY, { align: 'left' });
-          doc.text(dod, pageWidth - 1.2, currentY, { align: 'right' });
-          currentY += 0.6;
+          doc.text(dob, 1.0, currentY, { align: 'left' });
+          doc.text(dod, pageWidth - 1.0, currentY, { align: 'right' });
+          currentY += 0.5;
         }
         
-        // Now add all service information BELOW the dates
+        // Add some row space before service information
+        currentY += 0.2;
+        
+        // ALL REMAINING ITEMS ARE CENTERED AND USE PRINTED FONT (HELVETICA)
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(11);
         
-        // Service Day and Date
+        // 5. DATE OF FUNERAL - Day and Date (e.g., "Saturday, November 1, 2025")
         const serviceDay = this.getDayOfWeek(data.frontCover?.serviceDate);
         const serviceDate = this.formatDateForPDF(data.frontCover?.serviceDate);
         
@@ -5201,28 +5208,29 @@ Write a complete special thanks message.`;
           currentY += 0.25;
         }
         
-        // Service Time
+        // 6. TIME OF FUNERAL
         const serviceTime = this.formatTimeForPDF(data.frontCover?.serviceTime);
         if (serviceTime) {
           doc.text(serviceTime, centerX, currentY, { align: 'center' });
-          currentY += 0.3;
+          currentY += 0.25;
         }
         
-        // Venue/Church Name
+        // 7. FUNERAL LOCATION
+        // Line 1: Name of the place
         const venueName = data.frontCover?.venue?.name || data.frontCover?.serviceLocation || '';
         if (venueName) {
           doc.text(venueName.toUpperCase(), centerX, currentY, { align: 'center' });
           currentY += 0.2;
         }
         
-        // Venue Street Address
+        // Line 2: Street address
         const venueStreet = data.frontCover?.venue?.street || '';
         if (venueStreet) {
           doc.text(venueStreet.toUpperCase(), centerX, currentY, { align: 'center' });
           currentY += 0.2;
         }
         
-        // Venue City, State, ZIP
+        // Line 3: City, State, ZIP
         const venueCity = data.frontCover?.venue?.city || '';
         const venueState = data.frontCover?.venue?.state || '';
         const venueZip = data.frontCover?.venue?.zip || '';
@@ -5236,14 +5244,34 @@ Write a complete special thanks message.`;
             cityStateZip += (cityStateZip ? ' ' : '') + venueZip;
           }
           doc.text(cityStateZip.toUpperCase(), centerX, currentY, { align: 'center' });
-          currentY += 0.4;
+          currentY += 0.25;
         }
         
-        // Officiating Person
+        // 8. HOST PASTOR
+        const hostPastor = data.frontCover?.venue?.pastor || '';
+        if (hostPastor) {
+          doc.text(hostPastor.toUpperCase(), centerX, currentY, { align: 'center' });
+          currentY += 0.2;
+        }
+        
+        // 9. OFFICIATING PERSON
+        // CRITICAL: Do not duplicate if host pastor and officiant are the same
         const officiatingName = data.frontCover?.eulogistName || '';
+        
         if (officiatingName) {
-          const officiatingText = `${officiatingName.toUpperCase()}, OFFICIATING`;
-          doc.text(officiatingText, centerX, currentY, { align: 'center' });
+          // Check if officiant is different from host pastor
+          const isDifferentPerson = !hostPastor || 
+                                    hostPastor.toLowerCase().trim() !== officiatingName.toLowerCase().trim();
+          
+          if (isDifferentPerson) {
+            const officiatingText = `${officiatingName.toUpperCase()}, OFFICIATING`;
+            doc.text(officiatingText, centerX, currentY, { align: 'center' });
+          } else {
+            // Same person - just add "OFFICIATING" to previous line
+            currentY -= 0.2; // Move back up
+            const officiatingText = `${officiatingName.toUpperCase()}, OFFICIATING`;
+            doc.text(officiatingText, centerX, currentY, { align: 'center' });
+          }
         }
       },
 
